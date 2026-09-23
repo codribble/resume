@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>김상우 포트폴리오</title>
+<meta name="description" content="Node.js·TypeScript 풀스택 개발자 김상우의 포트폴리오. 실시간 알림(SSE), Outbox 큐 워커, 캐시 무효화 설계 등 문제 해결 과정을 정리했습니다." />
+<meta property="og:title" content="김상우 포트폴리오" />
+<meta property="og:description" content="Node.js·TypeScript 풀스택 개발자 김상우의 포트폴리오" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../">← 이력서</a>
+  <a href="#projects">프로젝트</a>
+  <a href="#career">경력</a>
+  <a href="#skills">기술</a>
+  <a href="#contact">연락처</a>
+</nav>
+
+<header class="hero">
+  <h1>반갑습니다,<br />김상우입니다<span class="dot">.</span></h1>
+  <p class="tagline">프론트엔드·백엔드와 배포를 같은 시야로 보고, 실패를 전제로 데이터 흐름의 경계를 설계하는 개발자</p>
+  <p class="intro">프론트엔드·백엔드와 배포를 함께 맡아 기능과 인프라를 같은 시야에서 봅니다. 낯선 기술이나 인프라 영역은 AI를 학습·구현의 도구로 활용하되 동작 원리와 근거를 확인한 뒤 반영하고, 동작하는 코드에 머물지 않고 모듈 구조와 상태 관리 위치 같은 설계를 먼저 따집니다. 해결 과정과 반복 작업은 문서로 정리해 다음 작업에서 재사용합니다.</p>
+</header>
+
+<section id="projects">
+  <p class="sec-label">PROJECTS</p>
+
+  <article class="case">
+    <div class="case-head">
+      <h3>무빙</h3>
+      <div class="tags">
+        <span class="tag role">FE·BE</span>
+        <span class="tag">코드잇 부트캠프 Part 4</span>
+      </div>
+    </div>
+    <p class="lead">이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을 다루는 이사 견적 매칭 서비스 · 담당: 견적요청·알림</p>
+
+    <div class="case-block">
+      <h4>A. 헤더 인증을 유지하는 실시간 알림 (FE)</h4>
+      <p>알림을 SSE로 받기로 했지만 앱 인증은 <code>Authorization: Bearer</code> 헤더인데 브라우저 <code>EventSource</code>는 커스텀 헤더를 실을 수 없었습니다. 토큰을 URL에 실으면 접근 로그·프록시에 남고, 짧게 만료되는 access token의 재발급을 자동 재연결 안에 끼워 넣기도 어려웠습니다.</p>
+      <ul>
+        <li><code>fetch</code>와 <code>response.body.getReader()</code>로 SSE 응답을 직접 읽는 클라이언트를 구현하고, 청크 경계·CRLF·EOF까지 처리하는 이벤트 파서와 zod 스키마 검증을 작성했습니다. 파싱에 실패한 이벤트는 에러 콜백만 부르고 스트림은 유지합니다.</li>
+        <li>첫 401에서만 토큰을 재발급해 1회 재시도하고, 그 외 끊김은 지수 백오프로 재연결하며 재연결 성공 시 유실 가능성이 있는 목록을 다시 맞추는 것을 하나의 연결 수명주기로 묶었습니다. 세션당 스트림은 1개만 유지하고 로그아웃 시 즉시 끊습니다.</li>
+        <li>CRLF·청크 경계·EOF 파싱, 401 재시도, 백오프, 캐시 무효화 분기를 단위 테스트로 고정했습니다.</li>
+      </ul>
+    </div>
+
+    <div class="case-block">
+      <h4>B. 대량 알림을 요청 경로에서 분리한 Outbox 워커 (BE)</h4>
+      <p>견적을 제출하면 조건에 맞는 모든 기사(수백~수천 명)에게 알림을 보내야 하는데, 초기에는 제출 API 안에서 직접 생성해 제출 응답이 대량 처리에 묶이고, 중간 실패 시 일부 기사만 알림을 받는 문제가 있었습니다.</p>
+      <ul>
+        <li>제출은 조건부 원자 업데이트 1건과 <code>NotificationOutbox</code> enqueue 1건만 수행하게 하고, <code>(jobType, sourceId)</code> unique로 재시도·재제출에도 잡이 1건으로 수렴하게 했습니다.</li>
+        <li>node-cron 워커가 <code>FOR UPDATE SKIP LOCKED</code>로 잡을 원자적으로 claim하고, 기사 200명 단위 커서 청크로 나눠 처리한 뒤 claim당 상한에 도달하면 커서를 남기고 양보해 다음 틱이 이어받게 했습니다.</li>
+        <li><code>attempts</code> 상한(5회) 후 FAILED와 <code>lastError</code> 기록, 5분 경과 stale 잡 재claim, 한 틱 내 실패 잡 제외로 중복 실행·부분 실패·무한 재시도를 다뤘습니다.</li>
+      </ul>
+    </div>
+
+    <div class="case-block">
+      <h4>결과</h4>
+      <p>제출 응답이 대량 알림 발송에서 분리됐고, 워커가 재시작하거나 중간에 실패해도 커서와 <code>attempts</code> 기준으로 이어서 재개됩니다. 토큰을 URL에 노출하지 않고 헤더 인증을 유지한 채 실시간 알림을 수신하며, 토큰 만료·네트워크 순단은 사용자 개입 없이 복구됩니다. 팀 공통 작업으로 GitHub Actions와 PM2 기반 배포 파이프라인도 구성해 main 병합 시 EC2 반영을 자동화했습니다.</p>
+    </div>
+
+    <div class="case-block">
+      <h4>배운 점</h4>
+      <p>표준 API가 요구사항과 맞지 않으면 우회보다 한 단계 낮은 API로 내려가는 선택지가 있다는 것, 그리고 외부로 나가는 대량 작업은 재시도·중복·부분 실패를 전제로 요청 경로에서 분리해 설계해야 한다는 기준을 갖게 되었습니다.</p>
+    </div>
+
+    <div class="chips"><span class="chip">Next.js</span><span class="chip">Express</span><span class="chip">Prisma</span><span class="chip">PostgreSQL</span><span class="chip">Socket.IO</span><span class="chip">node-cron</span><span class="chip">zod</span><span class="chip">GitHub Actions</span><span class="chip">PM2</span></div>
+    <a class="case-link" href="https://fs12-moving-team3.vercel.app" target="_blank" rel="noopener">라이브 데모 보기 ↗</a>
+  </article>
+
+  <article class="case">
+    <div class="case-head">
+      <h3>최애의 포토</h3>
+      <div class="tags">
+        <span class="tag role">Frontend</span>
+        <span class="tag">코드잇 부트캠프 Part 3</span>
+      </div>
+    </div>
+    <p class="lead">아이돌·스타·일러스트 디지털 포토카드를 사고팔고 교환하는 컬렉션 플랫폼 · 담당: 마이갤러리 · 포토카드 생성</p>
+
+    <div class="case-block">
+      <h4>A. 필터 변경 시 리렌더 범위 축소</h4>
+      <p>마이갤러리에서 필터를 바꾸면 목록뿐 아니라 상단 요약과 필터 UI까지 리렌더됐고, 페이지 레벨 로딩 분기 때문에 재조회마다 필터 UI가 리마운트되어 드롭다운 열림 상태와 입력 포커스가 끊겼습니다.</p>
+      <ul>
+        <li><code>React.memo</code>로 증상을 막는 대신, 원인이 "필터 상태가 최상위에 있는 구조"라고 보고 필터·검색·페이지 상태와 목록 쿼리를 <code>MyGalleryCardSection</code>으로 내리는 상태 콜로케이션을 택했습니다.</li>
+        <li>로딩 처리를 목록 영역 안으로 국소화하고 초기 로딩(<code>isLoading</code>)과 값 보유 상태의 재조회(<code>isFetching</code>)를 구분해, 재조회 중에도 필터·검색 UI가 마운트를 유지하게 했습니다.</li>
+      </ul>
+    </div>
+
+    <div class="case-block">
+      <h4>B. 월 생성 횟수 제한의 정합성</h4>
+      <p>월 생성 한도의 잔여 횟수를 마이갤러리와 생성 폼 두 곳에 표시하고 소진 시 막아야 했는데, 카드 생성 직후에도 잔여 표시가 갱신되지 않아 새로고침이 필요했습니다.</p>
+      <ul>
+        <li>잔여·한도의 단일 소스인 백엔드 <code>me</code> 응답을 두 화면이 함께 조회하게 하고, 소진 시 버튼 클릭·폼 제출·서버 응답 3단계로 게이팅했습니다. 클라이언트 검사는 UX용, 최종 판정은 서버로 두었습니다.</li>
+        <li>에러 코드별 처리 방식을 <code>ERROR_HANDLER</code> 테이블로 중앙화하고, 갱신 누락의 원인이 생성 mutation이 <code>me</code> 쿼리를 무효화하지 않던 것임을 확인해 무효화 대상에 추가했습니다.</li>
+      </ul>
+    </div>
+
+    <div class="case-block">
+      <h4>결과</h4>
+      <p>필터 변경 시 리렌더가 목록 영역으로 한정되고 필터 UI의 상태가 유지됩니다. 잔여 표시가 두 화면에서 일치하며, 잔여가 없으면 클릭·제출·서버 응답 어느 지점에서도 생성이 진행되지 않고 생성 직후 새로고침 없이 잔여 횟수가 갱신됩니다.</p>
+    </div>
+
+    <div class="case-block">
+      <h4>배운 점</h4>
+      <p>리렌더 범위는 상태의 위치가 결정하고, 서버 상태 캐시의 정확성은 무엇을 언제 무효화하느냐가 결정한다는 것을 설계 기준으로 삼게 되었습니다. 주강사 총평에서는 이 프로젝트에서 FE·BE 양쪽에 걸쳐 100커밋 이상을 기록해 팀 내 최다 기여였다는 언급을 받았습니다.</p>
+    </div>
+
+    <div class="chips"><span class="chip">Next.js</span><span class="chip">TanStack Query</span><span class="chip">Tailwind CSS</span></div>
+    <a class="case-link" href="https://favorite-photo-3nergy.vercel.app" target="_blank" rel="noopener">라이브 데모 보기 ↗</a>
+  </article>
+
+  <article class="case">
+    <div class="case-head">
+      <h3>공부의 숲</h3>
+      <div class="tags">
+        <span class="tag role">FE·BE</span>
+        <span class="tag">코드잇 부트캠프 Part 2</span>
+      </div>
+    </div>
+    <p class="lead">스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스 · 담당: 스터디 상세·목록 · 최근 조회 · 응원 이모지</p>
+
+    <div class="case-block">
+      <h4>최근 조회한 스터디: 낡은 스냅샷과 N개 쿼리</h4>
+      <p>최근 본 스터디를 객체 통째로 localStorage에 저장해 홈에서 그대로 보여주다 보니, 저장 이후 바뀐 포인트·이모지가 반영되지 않고 삭제된 스터디도 계속 노출됐습니다. 서버에서는 id마다 <code>findUniqueOrThrow</code>를 <code>Promise.all</code>로 실행해, id 개수만큼 쿼리가 나가고 하나만 없어도 응답 전체가 실패했습니다.</p>
+      <ul>
+        <li>localStorage에는 id만 최근순으로 저장하고, 홈 진입 시 <code>GET /studies/recent?ids=</code>로 서버의 최신값을 조회하도록 표시값의 출처를 서버로 옮겼습니다.</li>
+        <li>백엔드는 <code>findMany({ id: { in } })</code> 단일 쿼리로 바꾸고, <code>in</code> 결과가 순서를 보장하지 않으므로 입력 순서를 애플리케이션에서 재구성하며 삭제된 스터디는 걸러냅니다.</li>
+        <li>빈 localStorage에서는 요청을 보내지 않고(FE), <code>ids</code>가 없으면 빈 배열로 응답(BE)하도록 양쪽에서 방어했습니다.</li>
+      </ul>
+    </div>
+
+    <div class="case-block">
+      <h4>결과</h4>
+      <p>최근 목록이 저장 시점이 아닌 조회 시점의 서버 값으로 표시되고, id 개수와 무관하게 쿼리 1회로 처리되며 일부 스터디가 삭제돼도 나머지는 정상 응답합니다.</p>
+    </div>
+
+    <div class="case-block">
+      <h4>배운 점</h4>
+      <p>클라이언트가 들고 있는 파생 데이터는 식별자만 두고 표시값은 조회 시점의 서버 상태에서 받아야 낡지 않는다는 것, 여러 건 조회의 개별 루프는 쿼리 수와 실패 전파를 함께 키운다는 것을 기준으로 삼게 되었습니다.</p>
+    </div>
+
+    <div class="chips"><span class="chip">React</span><span class="chip">Vite</span><span class="chip">Express</span><span class="chip">Prisma</span></div>
+    <a class="case-link" href="https://forest-of-study.vercel.app" target="_blank" rel="noopener">라이브 데모 보기 ↗</a>
+  </article>
+</section>
+
+<section id="career">
+  <p class="sec-label">CAREER</p>
+  <div class="item">
+    <div class="item-head">
+      <h3>꼴크리에이티브</h3>
+      <div class="tags">
+        <span class="tag role">과장</span>
+        <span class="tag">2017.02 – 2026.01</span>
+      </div>
+    </div>
+    <ul>
+      <li><strong>비대면 진료 이커머스 플랫폼 (PM 겸 개발):</strong> 한의원·대행사·자사 3사와 외주 개발사가 참여한 프로젝트에 기획 단계부터 참여해, 늘어난 요구사항을 우선순위 기준으로 조율하며 오픈 일정에 맞춰 납품했습니다. PHP·cURL로 진료 시스템(ORCA)의 회원·주문·문진·체질설문 데이터를 조합한 고객 프로필을 채널톡에 동기화했고(반영되지 않던 필드는 API 스펙에 맞춰 PATCH를 PUT으로 전환해 해소), 3PL 회신 포맷을 그대로 받는 엑셀 업로드 커스터마이징으로 대량 배송 송장 등록을 일괄 처리로 전환했습니다.</li>
+      <li><strong>그누보드 재정보고 자동화:</strong> 연례 수작업으로 반복하던 재정보고 페이지를 데이터·표현 분리 스킨 구조로 재설계해 합계·구성비 계산과 표 렌더링을 서버 공통 함수로 통제했습니다. 연도별 페이지 코드가 표 마크업 포함 수백 줄에서 데이터 배열 수십 줄로 줄었고, 작업 시간은 20~30분에서 10분 이내로 단축됐습니다. 전달 데이터의 정합성 불일치는 계산값과 대조해 확인 후 반영하는 절차를 만들었습니다.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="skills">
+  <p class="sec-label">SKILLS</p>
+  <div class="skill-row">
+    <span class="skill-label">Language</span>
+    <span class="chips"><span class="chip">TypeScript</span><span class="chip">Node.js</span></span>
+  </div>
+  <div class="skill-row">
+    <span class="skill-label">Frontend</span>
+    <span class="chips"><span class="chip">React</span><span class="chip">Next.js</span><span class="chip">TanStack Query</span></span>
+  </div>
+  <div class="skill-row">
+    <span class="skill-label">Backend</span>
+    <span class="chips"><span class="chip">Express</span><span class="chip">Prisma</span><span class="chip">PostgreSQL</span></span>
+  </div>
+  <div class="skill-row">
+    <span class="skill-label">Infra · 기타</span>
+    <span class="chips"><span class="chip">SSE · Web Streams</span><span class="chip">node-cron</span><span class="chip">zod</span><span class="chip">GitHub Actions</span><span class="chip">PM2</span></span>
+  </div>
+</section>
+
+<section id="education">
+  <p class="sec-label">EDUCATION</p>
+  <ul class="edu">
+    <li>수원과학대학교 정보통신학과 · 2008.03 – 2013.02</li>
+    <li><strong>코드잇 부트캠프</strong> 클라우드 기반 풀스택 엔지니어 부트캠프 · 2026.02 – 2026.08</li>
+  </ul>
+</section>
+
+<section id="contact">
+  <p class="sec-label">CONTACT</p>
+  <div class="contact-cta">
+    <a href="mailto:shfdkwnrk@gmail.com">이메일 보내기</a>
+    <a class="ghost" href="https://github.com/codribble" target="_blank" rel="noopener">GitHub</a>
+    <a class="ghost" href="../">이력서 보기</a>
+  </div>
+</section>
+
+</body>
+</html>
