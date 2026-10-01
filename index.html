@@ -43,12 +43,11 @@
         <p>이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을 다루는 이사 견적 매칭 서비스입니다. 견적요청과 실시간 알림을 맡았습니다.</p>
         <h5>What did I do<span class="period-mark">.</span></h5>
         <ul>
-          <li>브라우저 <code>EventSource</code>가 <code>Authorization: Bearer</code> 헤더를 싣지 못하는 제약을 피해, <code>fetch</code>와 <code>ReadableStream</code>으로 SSE 응답을 직접 읽는 알림 클라이언트 구현 (토큰을 URL에 노출하지 않음)</li>
-          <li>청크 경계·CRLF·EOF를 처리하는 이벤트 파서와 zod 스키마 검증 작성. 파싱에 실패한 이벤트는 에러 콜백만 부르고 스트림은 유지</li>
-          <li>토큰 만료(첫 401 재발급 후 1회 재시도), 네트워크 순단(지수 백오프 재연결), 재연결 후 유실분 캐치업을 하나의 연결 수명주기로 설계하고 단위 테스트로 고정</li>
-          <li>견적 제출 시 매칭 기사 전원에게 가는 대량 알림을 제출 API에서 분리해 <code>NotificationOutbox</code> 큐와 node-cron 워커로 이관</li>
-          <li>멱등 enqueue, <code>FOR UPDATE SKIP LOCKED</code> 원자적 claim, 200명 커서 청크와 claim당 상한 후 양보, 재시도 5회 상한, stale 잡 재claim으로 중복 실행·부분 실패를 재시도 전제로 설계</li>
-          <li>팀 공통 작업으로 GitHub Actions와 PM2 기반 배포 파이프라인을 구성해 main 병합 시 EC2 반영 자동화</li>
+          <li><code>fetch</code>·<code>ReadableStream</code> 기반 SSE 알림 클라이언트 구현 (헤더 인증 유지)</li>
+          <li>토큰 재발급·재연결·유실분 캐치업을 단일 수명주기로 설계, 단위 테스트로 고정</li>
+          <li><code>NotificationOutbox</code> 큐 + node-cron 워커로 대량 알림 fan-out 분리</li>
+          <li>원자적 claim·커서 청크·재시도 상한 설계로 중복 실행·부분 실패 대응</li>
+          <li>GitHub Actions·PM2 배포 파이프라인 구성 (팀 공통)</li>
         </ul>
         <h5>Result<span class="period-mark">.</span></h5>
         <p>제출 응답이 대량 알림 발송에서 분리됐고, 워커가 재시작하거나 중간에 실패해도 커서와 시도 횟수 기준으로 이어서 재개됩니다. 토큰 만료와 네트워크 순단은 사용자 개입 없이 복구됩니다.</p>
@@ -73,10 +72,10 @@
         <p>아이돌·스타·일러스트 디지털 포토카드를 사고팔고 교환하는 컬렉션 플랫폼입니다. 마이갤러리와 포토카드 생성을 맡았습니다.</p>
         <h5>What did I do<span class="period-mark">.</span></h5>
         <ul>
-          <li>필터를 바꾸면 상단 요약·필터 UI까지 리렌더되고 재조회마다 필터 UI가 리마운트되던 문제를, 필터·검색·페이지 상태와 목록 쿼리를 별도 섹션 컴포넌트로 내리는 상태 콜로케이션으로 해결</li>
-          <li>초기 로딩(<code>isLoading</code>)과 값 보유 상태의 재조회(<code>isFetching</code>)를 구분해, 재조회 중에도 필터·검색 UI가 마운트를 유지하도록 로딩 처리를 목록 영역으로 국소화</li>
-          <li>월 포토카드 생성 횟수 제한을 백엔드 <code>me</code> 응답 하나를 두 화면이 함께 조회하도록 설계하고, 버튼 클릭·폼 제출·서버 응답 3단계로 게이팅</li>
-          <li>에러 코드별 처리 방식을 <code>ERROR_HANDLER</code> 테이블로 중앙화. 생성 후 잔여 횟수가 갱신되지 않던 원인이 mutation의 <code>me</code> 쿼리 무효화 누락임을 확인해 수정</li>
+          <li>필터 상태 콜로케이션으로 리렌더 범위를 목록 영역으로 한정</li>
+          <li><code>isLoading</code>·<code>isFetching</code> 분리로 재조회 중 필터 UI 마운트 유지</li>
+          <li>월 생성 횟수 제한을 <code>me</code> 응답 기준 3단계 게이팅으로 설계</li>
+          <li><code>ERROR_HANDLER</code> 테이블로 에러 처리 중앙화, 캐시 무효화 누락 수정</li>
         </ul>
         <h5>Result<span class="period-mark">.</span></h5>
         <p>필터 변경 시 리렌더가 목록 영역으로 한정되고 필터 UI의 상태가 유지됩니다. 잔여 횟수가 두 화면에서 일치하며 생성 직후 새로고침 없이 갱신됩니다.</p>
@@ -96,9 +95,9 @@
         <p>스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스입니다. 스터디 상세·목록, 최근 조회, 응원 이모지를 맡았습니다.</p>
         <h5>What did I do<span class="period-mark">.</span></h5>
         <ul>
-          <li>최근 조회한 스터디를 localStorage 객체 스냅샷 대신 id만 저장하고, 홈 진입 시 서버 최신값을 조회하도록 표시값의 출처를 서버로 이동</li>
-          <li>백엔드 다건 조회를 id별 <code>findUniqueOrThrow</code>와 <code>Promise.all</code> 루프에서 <code>findMany({ id: { in } })</code> 단일 쿼리로 변경. 입력 순서 재구성과 삭제된 스터디 필터 처리</li>
-          <li>빈 localStorage에서는 요청을 보내지 않고(FE), <code>ids</code>가 없으면 빈 배열로 응답(BE)하도록 양쪽에서 방어</li>
+          <li>최근 조회 스터디를 id만 저장, 홈 진입 시 서버 최신값 조회로 전환</li>
+          <li><code>findMany({ id: { in } })</code> 단일 쿼리로 변경, 순서 재구성·삭제분 필터 처리</li>
+          <li>빈 입력 방어를 FE·BE 양쪽에 적용</li>
         </ul>
         <h5>Result<span class="period-mark">.</span></h5>
         <p>최근 목록이 조회 시점의 서버 값으로 표시되고, id 개수와 무관하게 쿼리 1회로 처리됩니다. 일부 스터디가 삭제돼도 나머지는 정상 응답합니다.</p>
@@ -134,9 +133,9 @@
         <p>한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료 이커머스 플랫폼에 기획 단계부터 참여했습니다.</p>
         <h5>What did I do<span class="period-mark">.</span></h5>
         <ul>
-          <li>늘어난 요구사항을 우선순위 기준으로 3사·외주와 조율하며 오픈 일정에 맞춰 납품</li>
-          <li>PHP·cURL로 진료 시스템(ORCA)의 회원·주문·문진·체질설문 데이터를 조합한 고객 프로필을 채널톡에 동기화. 반영되지 않던 필드는 API 스펙에 맞춰 PATCH를 PUT으로 전환해 해소</li>
-          <li>3PL 회신 포맷을 그대로 받는 엑셀 업로드 커스터마이징으로 대량 배송 송장 등록을 일괄 처리로 전환</li>
+          <li>3사·외주와 요구사항 우선순위 조율, 오픈 일정 납품</li>
+          <li>PHP·cURL로 ORCA 데이터를 채널톡에 동기화 (PATCH → PUT 전환)</li>
+          <li>3PL 엑셀 업로드 커스터마이징으로 대량 송장 등록 일괄 처리</li>
         </ul>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p class="badges">
@@ -155,8 +154,8 @@
         <p>매년 수작업으로 반복하던 재정보고 페이지 갱신 업무를 구조부터 다시 설계했습니다.</p>
         <h5>What did I do<span class="period-mark">.</span></h5>
         <ul>
-          <li>합계·구성비 계산과 표 렌더링을 서버 공통 함수로 통제하고 연도별 페이지는 데이터 배열만 작성하는 데이터·표현 분리 스킨 구조로 재설계</li>
-          <li>전달 데이터의 정합성 불일치를 계산값과 대조해 확인한 뒤 반영하는 절차 수립</li>
+          <li>계산·렌더링을 서버 공통 함수로 분리하는 데이터·표현 분리 구조로 재설계</li>
+          <li>정합성 불일치 확인 절차 수립 (계산값 대조 후 반영)</li>
         </ul>
         <h5>Result<span class="period-mark">.</span></h5>
         <p>연도별 페이지 코드가 표 마크업 포함 수백 줄에서 데이터 배열 수십 줄로 줄었고, 작업 시간은 20~30분에서 10분 이내로 단축됐습니다.</p>
