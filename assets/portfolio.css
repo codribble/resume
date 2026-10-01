@@ -91,24 +91,12 @@ code {
 .contact-list li { padding-left: 0; }
 .contact-list li::before { content: none; }
 
-.topnav {
-  display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem 2rem 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-.topnav a { color: #888; }
-.topnav a:hover { color: #1f7a4d; }
-.topnav a[aria-current="page"] { color: #1f7a4d; }
-
 @media print {
   @page { size: A4; margin: 15mm; }
 
   html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { padding-bottom: 0; }
   body::before { display: none; }
-  .topnav { display: none; }
 
   h1 { font-size: 2.6rem; margin: 0 0 1rem; }
   h2 { font-size: 1.6rem; margin: 2rem 0 1rem; }
