@@ -49,7 +49,7 @@
     </div>
     <p class="sub">이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을 다루는 이사 견적 매칭 서비스</p>
     <p class="assign"><b>담당</b> · 견적요청·알림</p>
-    <p class="stack">Next.js · Express · Prisma · PostgreSQL · Socket.IO · node-cron · zod</p>
+    <p class="stack">Next.js · Express · Prisma · PostgreSQL · node-cron · zod</p>
     <ul>
       <li>브라우저 <code>EventSource</code>가 헤더 인증(<code>Authorization: Bearer</code>)을 싣지 못하는 제약을 피해, <code>fetch</code>와 <code>ReadableStream</code>으로 SSE 응답을 직접 읽는 알림 클라이언트를 구현했습니다. 토큰을 URL에 노출하지 않고 실시간 알림을 수신하며, 청크 경계·CRLF·EOF를 처리하는 파서와 zod 스키마 검증을 작성했습니다.</li>
       <li>토큰 만료(첫 401 재발급 후 1회 재시도), 네트워크 순단(지수 백오프 재연결), 재연결 후 유실분 캐치업을 하나의 연결 수명주기로 묶고, 파싱·재연결·인증 분기를 단위 테스트로 고정했습니다.</li>
