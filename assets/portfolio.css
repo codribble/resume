@@ -87,6 +87,9 @@ code {
 .skill-group h5 { margin-bottom: 0.4rem; }
 .skill-group p { margin: 0; }
 
+.badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 1rem; }
+.badges img { height: 20px; display: block; }
+
 .contact-list { margin-bottom: 0; display: flex; flex-wrap: wrap; gap: 0 1.5rem; }
 .contact-list li { padding-left: 0; }
 .contact-list li::before { content: none; }
