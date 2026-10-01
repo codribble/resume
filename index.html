@@ -3,139 +3,156 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>김상우 이력서</title>
+<title>이력서 - 김상우</title>
 <meta name="description" content="Node.js·TypeScript 풀스택 개발자 김상우의 이력서. 프론트엔드·백엔드·배포를 같은 시야로 보고 실패를 전제로 설계합니다." />
-<meta property="og:title" content="김상우 이력서" />
+<meta property="og:title" content="이력서 - 김상우" />
 <meta property="og:description" content="Node.js·TypeScript 풀스택 개발자 김상우의 이력서" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" />
-<link rel="stylesheet" href="assets/style.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="assets/portfolio.css" />
 </head>
 <body>
+<div class="container">
 
 <nav class="topnav">
   <a href="./" aria-current="page">이력서</a>
   <a href="portfolio/">포트폴리오 →</a>
 </nav>
 
-<header>
-  <p class="name"><b>김상우</b><span class="handle">codribble</span></p>
-  <p class="tagline">프론트엔드·백엔드와 배포를 같은 시야로 보고, 실패를 전제로 데이터 흐름의 경계를 설계하는 개발자</p>
-</header>
-
 <section>
-  <p class="sec-label">인적사항</p>
-  <dl class="contact">
-    <dt>이메일</dt><dd><a href="mailto:shfdkwnrk@gmail.com">shfdkwnrk@gmail.com</a></dd>
-    <dt>GitHub</dt><dd><a href="https://github.com/codribble">github.com/codribble</a></dd>
-    <dt>포트폴리오</dt><dd><a href="portfolio/">codribble.github.io/resume/portfolio</a></dd>
-  </dl>
-</section>
-
-<section>
-  <p class="sec-label">자기소개</p>
-  <p class="intro">저는 프론트엔드·백엔드와 배포를 함께 맡아 기능과 인프라를 같은 시야에서 보는 개발자입니다. 낯선 기술이나 인프라 영역은 AI를 학습·구현의 도구로 활용하되 동작 원리와 근거를 확인한 뒤 반영하고, 동작하는 코드에 머물지 않고 모듈 구조와 상태 관리 위치 같은 설계를 먼저 따집니다. 문제가 생기면 원인을 분석해 혼자 붙잡기보다 팀원·멘토의 도움을 활용하고, 해결 과정과 반복 작업을 문서로 정리해 다음 작업에서 재사용합니다.</p>
-</section>
-
-<section>
-  <p class="sec-label">프로젝트 · 부트캠프 팀</p>
-
-  <div class="item">
-    <div class="item-head">
-      <h3>무빙</h3>
-      <div class="tags">
-        <span class="tag role">FE·BE</span>
-        <span class="tag">코드잇 부트캠프 Part 4</span>
-      </div>
-    </div>
-    <p class="sub">이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을 다루는 이사 견적 매칭 서비스</p>
-    <p class="assign"><b>담당</b> · 견적요청·알림</p>
-    <p class="stack">Next.js · Express · Prisma · PostgreSQL · node-cron · zod</p>
-    <ul>
-      <li>브라우저 <code>EventSource</code>가 헤더 인증(<code>Authorization: Bearer</code>)을 싣지 못하는 제약을 피해, <code>fetch</code>와 <code>ReadableStream</code>으로 SSE 응답을 직접 읽는 알림 클라이언트를 구현했습니다. 토큰을 URL에 노출하지 않고 실시간 알림을 수신하며, 청크 경계·CRLF·EOF를 처리하는 파서와 zod 스키마 검증을 작성했습니다.</li>
-      <li>토큰 만료(첫 401 재발급 후 1회 재시도), 네트워크 순단(지수 백오프 재연결), 재연결 후 유실분 캐치업을 하나의 연결 수명주기로 묶고, 파싱·재연결·인증 분기를 단위 테스트로 고정했습니다.</li>
-      <li>견적 제출 시 매칭 기사 전원에게 가는 대량 알림을 제출 API에서 분리해 <code>NotificationOutbox</code> 큐와 node-cron 워커로 이관했습니다. 멱등 enqueue, <code>FOR UPDATE SKIP LOCKED</code> 원자적 claim, 200명 커서 청크와 claim당 상한 후 양보로 fan-out을 나누고, 중복 실행·부분 실패·재시도 상한·stale 잡 재개를 재시도 전제로 설계해 단위 테스트로 검증했습니다.</li>
-      <li>팀 공통 인프라 작업으로 GitHub Actions와 PM2 기반 배포 파이프라인을 구성해, main 병합 시 EC2 반영을 자동화했습니다 (담당 파트 외 공통 작업).</li>
-    </ul>
-  </div>
-
-  <div class="item">
-    <div class="item-head">
-      <h3>최애의 포토</h3>
-      <div class="tags">
-        <span class="tag role">Frontend</span>
-        <span class="tag">코드잇 부트캠프 Part 3</span>
-      </div>
-    </div>
-    <p class="sub">아이돌·스타·일러스트 디지털 포토카드를 사고팔고 교환하는 컬렉션 플랫폼</p>
-    <p class="assign"><b>담당</b> · 마이갤러리 · 포토카드 생성</p>
-    <p class="stack">Next.js · TanStack Query · Tailwind CSS</p>
-    <ul>
-      <li>마이갤러리에서 필터 값을 바꾸면 목록뿐 아니라 상단 요약·필터 UI까지 리렌더되고 페이지 레벨 로딩 분기 탓에 재조회 중 필터 UI가 리마운트되던 문제를, 필터·검색·페이지 상태와 목록 쿼리를 별도 섹션 컴포넌트로 분리하는 상태 콜로케이션과 로딩 처리 국소화로 리렌더 범위를 목록으로 한정했습니다. 초기 로딩(<code>isLoading</code>)과 값 보유 상태의 재조회(<code>isFetching</code>)를 구분해 재조회 중에도 필터·페이지 UI가 마운트를 유지하도록 했습니다.</li>
-      <li>월 포토카드 생성 횟수 제한을, 잔여·한도의 단일 소스인 백엔드 <code>me</code> 응답을 두 화면이 공통으로 조회하도록 설계하고 잔여 소진 시 버튼 클릭·폼 제출·서버 응답 3단계로 게이팅했습니다(에러 코드별 처리 방식은 <code>ERROR_HANDLER</code> 테이블로 중앙화). 생성 성공 후 잔여 표시가 갱신되지 않던 원인이 생성 mutation의 캐시 무효화에서 <code>me</code> 쿼리 누락임을 확인해 무효화 대상에 추가했습니다.</li>
-    </ul>
-  </div>
-
-  <div class="item">
-    <div class="item-head">
-      <h3>공부의 숲</h3>
-      <div class="tags">
-        <span class="tag role">FE·BE</span>
-        <span class="tag">코드잇 부트캠프 Part 2</span>
-      </div>
-    </div>
-    <p class="sub">스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스</p>
-    <p class="assign"><b>담당</b> · 스터디 상세·목록 · 최근 조회 · 응원 이모지</p>
-    <p class="stack">React · Vite · Express · Prisma</p>
-    <ul>
-      <li>최근 조회한 스터디의 표시 데이터를 localStorage 객체 스냅샷에서 id만 저장하고 홈 진입 시 서버 최신값을 조회하는 방식으로 전환하고, 백엔드 다건 조회를 id별 <code>findUniqueOrThrow</code>와 <code>Promise.all</code> 루프에서 <code>findMany({ id: { in } })</code> 단일 쿼리로 바꿔 id 개수만큼 늘던 쿼리와 하나만 없어도 전체가 실패하던 동작을 함께 제거했습니다. 입력 순서 재구성과 삭제분 필터, 빈 입력 방어를 FE와 BE 양쪽에 뒀습니다.</li>
-    </ul>
-  </div>
-</section>
-
-<section>
-  <p class="sec-label">경력</p>
-  <div class="item">
-    <div class="item-head">
-      <h3>꼴크리에이티브</h3>
-      <div class="tags">
-        <span class="tag role">과장</span>
-        <span class="tag">2017.02 – 2026.01</span>
-      </div>
-    </div>
-    <ul>
-      <li><strong>비대면 진료 이커머스 플랫폼 (PM 겸 개발):</strong> 한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료 이커머스에 기획 단계부터 참여해, 늘어난 요구사항을 우선순위 기준으로 3사·외주와 조율하며 오픈 일정에 맞춰 납품했습니다. PHP·cURL로 진료 시스템(ORCA)의 회원·주문·문진·체질설문 데이터를 조합한 고객 프로필을 채널톡에 동기화했고(반영되지 않던 필드는 API 스펙에 맞춰 PATCH를 PUT으로 전환해 해소), 3PL 회신 포맷을 그대로 받는 엑셀 업로드 커스터마이징으로 대량 배송 송장 등록을 일괄 처리로 전환했습니다.</li>
-      <li><strong>그누보드 재정보고 자동화:</strong> 연례 수작업으로 반복하던 재정보고 페이지 유지보수를 데이터·표현 분리 스킨 구조로 재설계해, 합계·구성비 계산과 표 렌더링을 서버 공통 함수로 통제하고 화면은 결과만 렌더링하도록 했습니다. 전달 데이터의 정합성 불일치는 계산값과 대조해 확인 후 반영하는 절차를 만들어, 반복 작업 시간과 수치 오류가 유입되던 지점을 함께 줄였습니다.</li>
-    </ul>
-  </div>
-</section>
-
-<section>
-  <p class="sec-label">기술</p>
-  <div class="skill-row">
-    <span class="skill-label">Language</span>
-    <span class="chips"><span class="chip">TypeScript</span><span class="chip">Node.js</span></span>
-  </div>
-  <div class="skill-row">
-    <span class="skill-label">Frontend</span>
-    <span class="chips"><span class="chip">React</span><span class="chip">Next.js</span><span class="chip">TanStack Query</span></span>
-  </div>
-  <div class="skill-row">
-    <span class="skill-label">Backend</span>
-    <span class="chips"><span class="chip">Express</span><span class="chip">Prisma</span><span class="chip">PostgreSQL</span></span>
-  </div>
-  <div class="skill-row">
-    <span class="skill-label">Infra · 기타</span>
-    <span class="chips"><span class="chip">SSE · Web Streams</span><span class="chip">node-cron</span><span class="chip">zod</span><span class="chip">GitHub Actions</span><span class="chip">PM2</span></span>
-  </div>
-</section>
-
-<section>
-  <p class="sec-label">학력</p>
-  <ul class="edu">
-    <li>수원과학대학교 정보통신학과 · 2008.03 – 2013.02</li>
-    <li><strong>코드잇 부트캠프</strong> 클라우드 기반 풀스택 엔지니어 부트캠프 · 2026.02 – 2026.08 · Part 1 미니 프로젝트부터 Part 4 팀 프로젝트까지 수행 (Part 2 공부의 숲, Part 3 최애의 포토, Part 4 무빙)</li>
+  <h1>반갑습니다,<br />저는 김상우입니다<span class="period-mark">.</span></h1>
+  <p class="big-paragraph">프론트엔드·백엔드와 배포를 같은 시야로 보고, 실패를 전제로 데이터 흐름의 경계를 설계하는 개발자입니다.</p>
+  <ul class="contact-list">
+    <li><a href="mailto:shfdkwnrk@gmail.com">shfdkwnrk@gmail.com</a></li>
+    <li><a href="https://github.com/codribble" target="_blank" rel="noopener noreferrer">github.com/codribble</a></li>
   </ul>
 </section>
 
+<section>
+  <h2>소개<span class="period-mark">.</span></h2>
+  <p>저는 프론트엔드·백엔드와 배포를 함께 맡아 기능과 인프라를 같은 시야에서 보는 개발자입니다. 낯선 기술이나 인프라 영역은 AI를 학습·구현의 도구로 활용하되 동작 원리와 근거를 확인한 뒤 반영하고, 동작하는 코드에 머물지 않고 모듈 구조와 상태 관리 위치 같은 설계를 먼저 따집니다. 문제가 생기면 원인을 분석해 혼자 붙잡기보다 팀원·멘토의 도움을 활용하고, 해결 과정과 반복 작업을 문서로 정리해 다음 작업에서 재사용합니다.</p>
+</section>
+
+<section>
+  <h2>Projects<span class="period-mark">.</span></h2>
+  <div class="row">
+    <div class="row-left">
+      <h3>코드잇 부트캠프<span class="period-mark">.</span></h3>
+      <span class="role">클라우드 기반 풀스택 엔지니어</span>
+      <span>2026. 02 - 2026. 08</span>
+    </div>
+    <div class="row-right">
+
+      <div class="project">
+        <h4>무빙<span class="period-mark">.</span></h4>
+        <span class="time">Part 4 팀 프로젝트 · FE·BE · 견적요청·알림 담당</span>
+        <p>이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을 다루는 이사 견적 매칭 서비스입니다.</p>
+        <ul>
+          <li>브라우저 <code>EventSource</code>가 헤더 인증(<code>Authorization: Bearer</code>)을 싣지 못하는 제약을 피해, <code>fetch</code>와 <code>ReadableStream</code>으로 SSE 응답을 직접 읽는 알림 클라이언트를 구현했습니다. 토큰을 URL에 노출하지 않고 실시간 알림을 수신하며, 청크 경계·CRLF·EOF를 처리하는 파서와 zod 스키마 검증을 작성했습니다.</li>
+          <li>토큰 만료(첫 401 재발급 후 1회 재시도), 네트워크 순단(지수 백오프 재연결), 재연결 후 유실분 캐치업을 하나의 연결 수명주기로 묶고, 파싱·재연결·인증 분기를 단위 테스트로 고정했습니다.</li>
+          <li>견적 제출 시 매칭 기사 전원에게 가는 대량 알림을 제출 API에서 분리해 <code>NotificationOutbox</code> 큐와 node-cron 워커로 이관했습니다. 멱등 enqueue, <code>FOR UPDATE SKIP LOCKED</code> 원자적 claim, 200명 커서 청크와 claim당 상한 후 양보로 fan-out을 나누고, 중복 실행·부분 실패·재시도 상한·stale 잡 재개를 재시도 전제로 설계해 단위 테스트로 검증했습니다.</li>
+          <li>팀 공통 인프라 작업으로 GitHub Actions와 PM2 기반 배포 파이프라인을 구성해, main 병합 시 EC2 반영을 자동화했습니다 (담당 파트 외 공통 작업).</li>
+        </ul>
+        <h5>Tech Stack<span class="period-mark">.</span></h5>
+        <p>Next.js, Express, Prisma, PostgreSQL, node-cron, zod</p>
+      </div>
+
+      <div class="project">
+        <h4>최애의 포토<span class="period-mark">.</span></h4>
+        <span class="time">Part 3 팀 프로젝트 · Frontend · 마이갤러리·포토카드 생성 담당</span>
+        <p>아이돌·스타·일러스트 디지털 포토카드를 사고팔고 교환하는 컬렉션 플랫폼입니다.</p>
+        <ul>
+          <li>마이갤러리에서 필터 값을 바꾸면 목록뿐 아니라 상단 요약·필터 UI까지 리렌더되고 페이지 레벨 로딩 분기 탓에 재조회 중 필터 UI가 리마운트되던 문제를, 필터·검색·페이지 상태와 목록 쿼리를 별도 섹션 컴포넌트로 분리하는 상태 콜로케이션과 로딩 처리 국소화로 리렌더 범위를 목록으로 한정했습니다. 초기 로딩(<code>isLoading</code>)과 값 보유 상태의 재조회(<code>isFetching</code>)를 구분해 재조회 중에도 필터·페이지 UI가 마운트를 유지하도록 했습니다.</li>
+          <li>월 포토카드 생성 횟수 제한을, 잔여·한도의 단일 소스인 백엔드 <code>me</code> 응답을 두 화면이 공통으로 조회하도록 설계하고 잔여 소진 시 버튼 클릭·폼 제출·서버 응답 3단계로 게이팅했습니다(에러 코드별 처리 방식은 <code>ERROR_HANDLER</code> 테이블로 중앙화). 생성 성공 후 잔여 표시가 갱신되지 않던 원인이 생성 mutation의 캐시 무효화에서 <code>me</code> 쿼리 누락임을 확인해 무효화 대상에 추가했습니다.</li>
+        </ul>
+        <h5>Tech Stack<span class="period-mark">.</span></h5>
+        <p>Next.js, TanStack Query, Tailwind CSS</p>
+      </div>
+
+      <div class="project">
+        <h4>공부의 숲<span class="period-mark">.</span></h4>
+        <span class="time">Part 2 팀 프로젝트 · FE·BE · 스터디 상세·최근 조회 담당</span>
+        <p>스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스입니다.</p>
+        <ul>
+          <li>최근 조회한 스터디의 표시 데이터를 localStorage 객체 스냅샷에서 id만 저장하고 홈 진입 시 서버 최신값을 조회하는 방식으로 전환하고, 백엔드 다건 조회를 id별 <code>findUniqueOrThrow</code>와 <code>Promise.all</code> 루프에서 <code>findMany({ id: { in } })</code> 단일 쿼리로 바꿔 id 개수만큼 늘던 쿼리와 하나만 없어도 전체가 실패하던 동작을 함께 제거했습니다. 입력 순서 재구성과 삭제분 필터, 빈 입력 방어를 FE와 BE 양쪽에 뒀습니다.</li>
+        </ul>
+        <h5>Tech Stack<span class="period-mark">.</span></h5>
+        <p>React, Vite, Express, Prisma</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>경력<span class="period-mark">.</span></h2>
+  <div class="row">
+    <div class="row-left">
+      <h3>꼴크리에이티브<span class="period-mark">.</span></h3>
+      <span class="role">과장</span>
+      <span>2017. 02 - 2026. 01</span>
+    </div>
+    <div class="row-right">
+
+      <div class="project">
+        <h4>비대면 진료 이커머스 플랫폼<span class="period-mark">.</span></h4>
+        <span class="time">PM 겸 개발</span>
+        <p>한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료 이커머스에 기획 단계부터 참여해, 늘어난 요구사항을 우선순위 기준으로 3사·외주와 조율하며 오픈 일정에 맞춰 납품했습니다. PHP·cURL로 진료 시스템(ORCA)의 회원·주문·문진·체질설문 데이터를 조합한 고객 프로필을 채널톡에 동기화했고(반영되지 않던 필드는 API 스펙에 맞춰 PATCH를 PUT으로 전환해 해소), 3PL 회신 포맷을 그대로 받는 엑셀 업로드 커스터마이징으로 대량 배송 송장 등록을 일괄 처리로 전환했습니다.</p>
+      </div>
+
+      <div class="project">
+        <h4>그누보드 재정보고 자동화<span class="period-mark">.</span></h4>
+        <span class="time">유지보수 개선</span>
+        <p>연례 수작업으로 반복하던 재정보고 페이지 유지보수를 데이터·표현 분리 스킨 구조로 재설계해, 합계·구성비 계산과 표 렌더링을 서버 공통 함수로 통제하고 화면은 결과만 렌더링하도록 했습니다. 전달 데이터의 정합성 불일치는 계산값과 대조해 확인 후 반영하는 절차를 만들어, 반복 작업 시간과 수치 오류가 유입되던 지점을 함께 줄였습니다.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>학력<span class="period-mark">.</span></h2>
+  <div class="row">
+    <div class="row-left">
+      <h3>수원과학대학교<span class="period-mark">.</span></h3>
+      <span class="role">정보통신학과</span>
+      <span>2008. 03 - 2013. 02</span>
+    </div>
+    <div class="row-right">
+      <p>전문학사</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row-left">
+      <h3>코드잇 부트캠프<span class="period-mark">.</span></h3>
+      <span class="role">클라우드 기반 풀스택 엔지니어</span>
+      <span>2026. 02 - 2026. 08</span>
+    </div>
+    <div class="row-right">
+      <p>Part 1 미니 프로젝트부터 Part 4 팀 프로젝트까지 수행했습니다. (Part 2 공부의 숲, Part 3 최애의 포토, Part 4 무빙)</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Skills<span class="period-mark">.</span></h2>
+  <div class="skill-group">
+    <h5>Language<span class="period-mark">.</span></h5>
+    <p>TypeScript, Node.js</p>
+  </div>
+  <div class="skill-group">
+    <h5>Frontend<span class="period-mark">.</span></h5>
+    <p>React, Next.js, TanStack Query</p>
+  </div>
+  <div class="skill-group">
+    <h5>Backend<span class="period-mark">.</span></h5>
+    <p>Express, Prisma, PostgreSQL</p>
+  </div>
+  <div class="skill-group">
+    <h5>Infra · 기타<span class="period-mark">.</span></h5>
+    <p>SSE·Web Streams, node-cron, zod, GitHub Actions, PM2</p>
+  </div>
+</section>
+
+</div>
 </body>
 </html>
