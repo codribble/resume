@@ -2,8 +2,8 @@
   --ink: #1a1c1e;
   --sub: #5b6167;
   --faint: #868c92;
-  --accent: #1f4e5f;
-  --accent-soft: rgba(31, 78, 95, 0.1);
+  --accent: #1f7a4d;
+  --accent-soft: rgba(31, 122, 77, 0.1);
   --line: #e2e5e7;
   --chip-bg: #eef2f3;
   --card-bg: #fafbfb;
@@ -291,7 +291,7 @@ code {
 
   code { background: transparent; padding: 0; }
   .tag, .chip { border: 1px solid var(--line); }
-  .tag.role { border-color: rgba(31, 78, 95, 0.35); }
+  .tag.role { border-color: rgba(31, 122, 77, 0.35); }
 
   section, .item, .item li, .skill-row, .edu li, .case { break-inside: avoid; }
   .sec-label, .item-head { break-after: avoid; }
