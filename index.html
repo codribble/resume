@@ -50,6 +50,24 @@
       </div>
 
       <div class="project">
+        <h4>공부의 숲<span class="period-mark">.</span></h4>
+        <span class="time">Part 2 팀 프로젝트 · FE·BE · 스터디 상세·최근 조회 담당</span>
+        <h5>Description<span class="period-mark">.</span></h5>
+        <p>스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스입니다. 스터디 상세·목록, 최근 조회, 응원 이모지를 맡았습니다.</p>
+        <h5>What did I do<span class="period-mark">.</span></h5>
+        <ul>
+          <li>최근 조회 스터디를 id만 저장, 홈 진입 시 서버 최신값 조회로 전환</li>
+          <li><code>findMany({ id: { in } })</code> 단일 쿼리로 변경, 순서 재구성·삭제분 필터 처리</li>
+          <li>빈 입력 방어를 FE·BE 양쪽에 적용</li>
+        </ul>
+        <h5>Result<span class="period-mark">.</span></h5>
+        <p>최근 목록이 조회 시점의 서버 값으로 표시되고, id 개수와 무관하게 쿼리 1회로 처리됩니다. 일부 스터디가 삭제돼도 나머지는 정상 응답합니다.</p>
+        <h5>Tech Stack<span class="period-mark">.</span></h5>
+        <p>React, Vite, Express, Prisma</p>
+        <p><a href="https://forest-of-study.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
+      </div>
+
+      <div class="project">
         <h4>최애의 포토<span class="period-mark">.</span></h4>
         <span class="time">Part 3 팀 프로젝트 · Frontend · 마이갤러리·포토카드 생성 담당</span>
         <h5>Description<span class="period-mark">.</span></h5>
@@ -66,24 +84,6 @@
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p>Next.js, TanStack Query, Tailwind CSS</p>
         <p><a href="https://favorite-photo-3nergy.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
-      </div>
-
-      <div class="project">
-        <h4>공부의 숲<span class="period-mark">.</span></h4>
-        <span class="time">Part 2 팀 프로젝트 · FE·BE · 스터디 상세·최근 조회 담당</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스입니다. 스터디 상세·목록, 최근 조회, 응원 이모지를 맡았습니다.</p>
-        <h5>What did I do<span class="period-mark">.</span></h5>
-        <ul>
-          <li>최근 조회 스터디를 id만 저장, 홈 진입 시 서버 최신값 조회로 전환</li>
-          <li><code>findMany({ id: { in } })</code> 단일 쿼리로 변경, 순서 재구성·삭제분 필터 처리</li>
-          <li>빈 입력 방어를 FE·BE 양쪽에 적용</li>
-        </ul>
-        <h5>Result<span class="period-mark">.</span></h5>
-        <p>최근 목록이 조회 시점의 서버 값으로 표시되고, id 개수와 무관하게 쿼리 1회로 처리됩니다. 일부 스터디가 삭제돼도 나머지는 정상 응답합니다.</p>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>React, Vite, Express, Prisma</p>
-        <p><a href="https://forest-of-study.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
       </div>
 
     </div>
