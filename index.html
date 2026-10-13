@@ -43,7 +43,7 @@
           <li>GitHub Actions·PM2 배포 파이프라인 구성 (팀 공통)</li>
         </ul>
         <h5>Result<span class="period-mark">.</span></h5>
-        <p>제출 응답이 대량 알림 발송에서 분리됐고, 워커가 재시작하거나 중간에 실패해도 커서와 시도 횟수 기준으로 이어서 재개됩니다. 토큰 만료와 네트워크 순단은 사용자 개입 없이 복구됩니다.</p>
+        <p>제출 응답이 대량 알림 발송에서 분리됐고, 워커가 재시작하거나 중간에 실패해도 커서와 시도 횟수 기준으로 이어서 재개됩니다. 토큰 만료와 네트워크 순단은 사용자 개입 없이 복구됩니다. 배포에서는 소형 인스턴스의 의존성 설치(exit 137, OOM Kill)와 빌드(exit 134, 힙 초과) 단계 메모리 오류를 나눠 추적해, 스왑 설정과 빌드 시에만 Node.js 힙 상한을 올려 해소했습니다.</p>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p>Next.js, Express, Prisma, PostgreSQL, node-cron, zod, GitHub Actions, PM2</p>
         <p><a href="https://fs12-moving-team3.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
