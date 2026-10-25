@@ -43,7 +43,7 @@
         </ul>
         <h5>SSE 알림 클라이언트를 fetch로 구현<span class="period-mark">.</span></h5>
         <ul>
-          <li><strong>문제</strong> 앱 인증이 Authorization 헤더 기반인데 브라우저 <code>EventSource</code>는 헤더를 실을 수 없어 토큰을 URL에 노출해야 했고, 토큰 만료·네트워크 순단·유실분은 표준 API가 처리하지 못했습니다.</li>
+          <li><strong>문제</strong> 이 서비스의 인증이 Authorization 헤더 기반인데 브라우저 <code>EventSource</code>는 헤더를 실을 수 없어 토큰을 URL에 노출해야 했고, 토큰 만료·네트워크 순단·유실분은 표준 API가 처리하지 못했습니다.</li>
           <li><strong>원인</strong> <code>EventSource</code>의 고정된 자동 재연결 안에는 "만료 감지 → 재발급 → 새 연결"을 끼워 넣기 어려웠습니다.</li>
           <li><strong>해결</strong> <code>fetch</code>와 <code>ReadableStream</code>으로 SSE를 직접 읽는 클라이언트와 파서(zod 검증)를 구현했습니다. 첫 401만 재발급 후 1회 재시도하고 재발급 후에도 401이면 자동 재연결을 멈추며, 그 외 끊김은 1~15초 지수 백오프로 재연결하고 재연결에 성공하면 끊긴 동안의 알림을 캐치업합니다.</li>
           <li><strong>결과</strong> 토큰을 URL에 노출하지 않고 만료·순단에도 사용자 개입 없이 스트림이 이어지도록 설계했습니다. 파싱(CRLF·청크 경계·EOF 잔여 버퍼)·재연결·인증 분기를 단위 테스트(Vitest)로 고정했습니다. 한계: 확인한 범위는 단위 테스트까지이고 실서비스 E2E는 하지 않았습니다.</li>
