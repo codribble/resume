@@ -55,13 +55,6 @@
           <li><strong>해결</strong> 설치 단계의 메모리 압박에는 스왑 2GB를 추가했고, 빌드에는 Node.js 힙 상한(<code>--max-old-space-size=1536</code>)을 올렸습니다. 스왑을 더 늘리는 안은 디스크 여유가 2.4GB뿐이라 적용하지 않았습니다. 힙 값은 AI가 제안한 값을 적용했습니다.</li>
           <li><strong>결과</strong> 5회째에 배포가 성공해 GitHub Actions·PM2 배포 파이프라인이 동작합니다. 얻은 기준은 137은 OS OOM, 134는 V8 힙이며, 같은 지점에서 반복해 죽으면 스왑보다 V8 힙 상한을 먼저 본다는 것입니다. 한계: 힙 값은 직접 실험으로 정한 것이 아니고 빌드 시간은 측정하지 않았습니다.</li>
         </ul>
-        <h5>Tailwind 스타일링 컨벤션 제안<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 컴포넌트마다 템플릿 리터럴로 <code>className</code>을 조합하고 있어 variant 관리가 어렵고, 외부에서 전달한 <code>className</code>과 내부 스타일이 충돌해 Tailwind 클래스 우선순위가 꼬일 수 있었습니다.</li>
-          <li><strong>원인</strong> 클래스 조합 규칙이 없었고, 중급 프로젝트에서 코드리뷰 멘토가 짚어 줬지만 구현에 쫓겨 적용하지 못한 채 끝났습니다.</li>
-          <li><strong>해결</strong> <code>clsx</code>·<code>tailwind-merge</code>·<code>cva</code>를 설명한 글을 팀 개발 자료에 공유해 도입을 제안했고, 합의 후 팀 규칙이 되었습니다. <code>cn</code> 유틸을 <code>fe/src/lib/utils.ts</code>에 만들고 Button을 <code>cva</code>+<code>cn</code> 예시로 다시 써서 <code>.cursor/rules</code>의 규칙(신규 컴포넌트는 <code>cn()</code> 필수, variant는 <code>cva</code>)과 맞췄습니다.</li>
-          <li><strong>결과</strong> 신규 컴포넌트의 클래스 조합 기준이 팀 규칙으로 정해졌습니다. 한계: 기존 공용 컴포넌트는 마이그레이션하지 않고 작업 시점에 개별 반영하기로 했으며, 팀원이 실제로 얼마나 썼는지는 기록으로 확인하지 못했습니다.</li>
-        </ul>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p>Next.js, Express, Prisma, PostgreSQL, Tailwind CSS, node-cron, zod, Vitest, GitHub Actions, PM2</p>
         <p><a href="https://fs12-moving-team3.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
