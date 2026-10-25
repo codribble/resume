@@ -34,18 +34,36 @@
         <span class="time">Part 4 팀 프로젝트 · FE·BE · 견적요청·알림 담당</span>
         <h5>Description<span class="period-mark">.</span></h5>
         <p>이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을 다루는 이사 견적 매칭 서비스입니다. 견적요청과 실시간 알림을 맡았습니다.</p>
-        <h5>What did I do<span class="period-mark">.</span></h5>
+        <h5>대량 알림을 Outbox 큐로 분리<span class="period-mark">.</span></h5>
         <ul>
-          <li><code>fetch</code>·<code>ReadableStream</code> 기반 SSE 알림 클라이언트 구현 (헤더 인증 유지)</li>
-          <li>토큰 재발급·재연결·유실분 캐치업을 단일 수명주기로 설계, 단위 테스트로 고정</li>
-          <li><code>NotificationOutbox</code> 큐 + node-cron 워커로 대량 알림 fan-out 분리</li>
-          <li>원자적 claim·커서 청크·재시도 상한 설계로 중복 실행·부분 실패 대응</li>
-          <li>GitHub Actions·PM2 배포 파이프라인 구성 (팀 공통)</li>
+          <li><strong>문제</strong> 견적 제출 때 매칭 기사 전원의 알림을 제출 요청 안에서 <code>Promise.all</code>로 만들어, 대상이 늘수록 응답이 길어지고 일부가 실패해도 재시도할 수 없었습니다.</li>
+          <li><strong>원인</strong> 제출 경로와 발송 경로가 한 요청에 묶여 있었고, 동시성을 제한해도 제출 프로세스가 수천 건을 직접 도는 구조는 그대로 남았습니다.</li>
+          <li><strong>해결</strong> 제출은 <code>NotificationOutbox</code> 1건만 남기고(<code>jobType</code>·<code>sourceId</code> unique로 재제출에도 1건), node-cron 워커가 <code>FOR UPDATE SKIP LOCKED</code>로 잡을 claim해 200명 커서 청크로 발송합니다. 재시도는 5회 상한, 실패한 잡은 같은 틱에서 다시 집지 않게 했고 단위 테스트로 규칙을 고정했습니다.</li>
+          <li><strong>결과</strong> 부트캠프 이후 수신자 9,800명을 가정한 로컬 측정(워밍업 1회 + 5회 반복 중앙값)에서 제출 경로의 알림 처리 시간이 약 974ms에서 약 1ms로 줄었고, 같은 연결 풀을 쓰는 다른 요청의 최대 대기도 451ms에서 7.4ms로 줄었습니다(대기 표본이 5~6개라 최대값으로만 사용). 한계: 알림 처리가 제출 경로에서 빠진 것이지 전체 처리 시간이 줄어든 것은 아니고, 워커는 9,800명을 청크 200 기준 약 0.8초에 처리하며 도착 시각은 cron 주기에 따릅니다. 청크 200은 측정으로 정한 값이 아니고(측정상 청크가 클수록 빨랐고, 큰 청크는 트랜잭션 점유 시간이 늘어납니다), 로컬 합성 부하라 운영 수치가 아닙니다.</li>
         </ul>
-        <h5>Result<span class="period-mark">.</span></h5>
-        <p>제출 응답이 대량 알림 발송에서 분리됐고, 워커가 재시작하거나 중간에 실패해도 커서와 시도 횟수 기준으로 이어서 재개됩니다. 토큰 만료와 네트워크 순단은 사용자 개입 없이 복구됩니다. 배포에서는 소형 인스턴스의 의존성 설치(exit 137, OOM Kill)와 빌드(exit 134, 힙 초과) 단계 메모리 오류를 나눠 추적해, 스왑 설정과 빌드 시에만 Node.js 힙 상한을 올려 해소했습니다.</p>
+        <h5>SSE 알림 클라이언트를 fetch로 구현<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> 앱 인증이 Authorization 헤더 기반인데 브라우저 <code>EventSource</code>는 헤더를 실을 수 없어 토큰을 URL에 노출해야 했고, 토큰 만료·네트워크 순단·유실분은 표준 API가 처리하지 못했습니다.</li>
+          <li><strong>원인</strong> <code>EventSource</code>의 고정된 자동 재연결 안에는 "만료 감지 → 재발급 → 새 연결"을 끼워 넣기 어려웠습니다.</li>
+          <li><strong>해결</strong> <code>fetch</code>와 <code>ReadableStream</code>으로 SSE를 직접 읽는 클라이언트와 파서(zod 검증)를 구현했습니다. 첫 401만 재발급 후 1회 재시도하고 재발급 후에도 401이면 자동 재연결을 멈추며, 그 외 끊김은 1~15초 지수 백오프로 재연결하고 재연결에 성공하면 끊긴 동안의 알림을 캐치업합니다.</li>
+          <li><strong>결과</strong> 토큰을 URL에 노출하지 않고 만료·순단에도 사용자 개입 없이 스트림이 이어지도록 설계했습니다. 파싱(CRLF·청크 경계·EOF 잔여 버퍼)·재연결·인증 분기를 단위 테스트(Vitest)로 고정했습니다. 한계: 확인한 범위는 단위 테스트까지이고 실서비스 E2E는 하지 않았습니다.</li>
+        </ul>
+        <h5>EC2 자동 배포 실패 원인 추적<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> BE를 AWS EC2에 올리고 GitHub Actions로 main push 자동 배포를 구성하는 중, 소형 인스턴스에서 배포가 4회 연속 실패하고 5회째에 성공했습니다.</li>
+          <li><strong>원인</strong> 실패마다 종료 코드와 멈춘 단계로 분류했습니다(137 → 2 → 134). 137은 의존성 설치 중 OS의 OOM Kill이었고, 134는 빌드 중 V8 힙 초과였습니다. 서버를 멈춰도 같은 지점에서 죽는다는 점이 단서가 되어, 스왑이 아니라 V8 힙 상한 문제로 판단했습니다.</li>
+          <li><strong>해결</strong> 설치 단계의 메모리 압박에는 스왑 2GB를 추가했고, 빌드에는 Node.js 힙 상한(<code>--max-old-space-size=1536</code>)을 올렸습니다. 스왑을 더 늘리는 안은 디스크 여유가 2.4GB뿐이라 적용하지 않았습니다. 힙 값은 AI가 제안한 값을 적용했습니다.</li>
+          <li><strong>결과</strong> 5회째에 배포가 성공해 GitHub Actions·PM2 배포 파이프라인이 동작합니다. 얻은 기준은 137은 OS OOM, 134는 V8 힙이며, 같은 지점에서 반복해 죽으면 스왑보다 V8 힙 상한을 먼저 본다는 것입니다. 한계: 힙 값은 직접 실험으로 정한 것이 아니고 빌드 시간은 측정하지 않았습니다.</li>
+        </ul>
+        <h5>Tailwind 스타일링 컨벤션 제안<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> 컴포넌트마다 템플릿 리터럴로 <code>className</code>을 조합하고 있어 variant 관리가 어렵고, 외부에서 전달한 <code>className</code>과 내부 스타일이 충돌해 Tailwind 클래스 우선순위가 꼬일 수 있었습니다.</li>
+          <li><strong>원인</strong> 클래스 조합 규칙이 없었고, 중급 프로젝트에서 코드리뷰 멘토가 짚어 줬지만 구현에 쫓겨 적용하지 못한 채 끝났습니다.</li>
+          <li><strong>해결</strong> <code>clsx</code>·<code>tailwind-merge</code>·<code>cva</code>를 설명한 글을 팀 개발 자료에 공유해 도입을 제안했고, 합의 후 팀 규칙이 되었습니다. <code>cn</code> 유틸을 <code>fe/src/lib/utils.ts</code>에 만들고 Button을 <code>cva</code>+<code>cn</code> 예시로 다시 써서 <code>.cursor/rules</code>의 규칙(신규 컴포넌트는 <code>cn()</code> 필수, variant는 <code>cva</code>)과 맞췄습니다.</li>
+          <li><strong>결과</strong> 신규 컴포넌트의 클래스 조합 기준이 팀 규칙으로 정해졌습니다. 한계: 기존 공용 컴포넌트는 마이그레이션하지 않고 작업 시점에 개별 반영하기로 했으며, 팀원이 실제로 얼마나 썼는지는 기록으로 확인하지 못했습니다.</li>
+        </ul>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>Next.js, Express, Prisma, PostgreSQL, node-cron, zod, GitHub Actions, PM2</p>
+        <p>Next.js, Express, Prisma, PostgreSQL, Tailwind CSS, node-cron, zod, Vitest, GitHub Actions, PM2</p>
         <p><a href="https://fs12-moving-team3.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
       </div>
 
@@ -132,14 +150,29 @@
 
       <div class="project">
         <h4>비대면 진료 이커머스 플랫폼<span class="period-mark">.</span></h4>
-        <span class="time">PM 겸 개발</span>
+        <span class="time">기획 단계부터 참여 · 채널톡 연동·3PL 양식 개발 · 외주 검수</span>
         <h5>Description<span class="period-mark">.</span></h5>
-        <p>한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료 이커머스 플랫폼에 기획 단계부터 참여했습니다.</p>
-        <h5>What did I do<span class="period-mark">.</span></h5>
+        <p>한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료 이커머스 플랫폼에 기획 단계부터 참여했습니다. 3사 요구사항을 취합·문서화하고 유저 플로우를 설계했으며, 오픈 전 필수 여부로 우선순위를 정해 일정에 맞춰 오픈했고, 외주 개발분은 완료 때마다 검수해 재요청했습니다. 외주 개발사가 구현한 부분은 제 구현에서 제외했습니다.</p>
+        <h5>로그아웃 후 식별 정보 잔존<span class="period-mark">.</span></h5>
         <ul>
-          <li>3사·외주와 요구사항 우선순위 조율, 오픈 일정 납품</li>
-          <li>PHP·cURL로 ORCA 데이터를 채널톡에 동기화 (PATCH → PUT 전환)</li>
-          <li>3PL 엑셀 업로드 커스터마이징으로 대량 송장 등록 일괄 처리</li>
+          <li><strong>문제</strong> 로그아웃한 비회원 문의창에 이전 회원의 이름·연락처가 남는 것을 직접 문의 테스트 중 발견했습니다.</li>
+          <li><strong>원인</strong> 쇼핑몰 로그아웃과 채널톡 사용자 식별이 따로 동작했고, 기존 로그아웃은 PHP 리다이렉트로 바로 이동해 채널톡 종료 스크립트가 실행되지 않았습니다. 원인은 AI와 함께 좁힌 가설입니다.</li>
+          <li><strong>해결</strong> 로그아웃 페이지에서 채널톡을 먼저 종료한 뒤 이동하도록 바꿨습니다.</li>
+          <li><strong>결과</strong> 비회원 화면으로 열어 이전 회원의 식별 정보가 비워지는 것을 직접 확인했습니다.</li>
+        </ul>
+        <h5>결제일시가 채널톡에 반영되지 않던 문제<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> 무통장 입금확인 후 결제일시가 채널톡 상담 화면에 반영되지 않았습니다.</li>
+          <li><strong>원인</strong> 서버 출력과 통제 테스트로 조건을 하나씩 따라가며 채널톡 수정 호출(PATCH)이 422로 실패하는 것을 확인했습니다. PATCH가 실패한 이유 자체는 확인하지 못했습니다.</li>
+          <li><strong>해결</strong> PUT으로 바꿨습니다. 경위는 AI 초안 PATCH → AI 제안 PUT → AI 추천 PATCH(검증 없이 적용) → 422 실패 → PUT 복귀이며, PUT으로 반영되는 것을 직접 확인했습니다.</li>
+          <li><strong>결과</strong> 결제일시가 채널톡에 반영됩니다. 한계: 채널톡 공식 문서와 대조하지 않아 스펙상 차이는 단정하지 않습니다.</li>
+        </ul>
+        <h5>3PL 회신 엑셀 일괄 송장 등록<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> 배송 송장 등록이 반복 수작업이었습니다.</li>
+          <li><strong>원인</strong> CMS 일괄배송 엑셀 양식이 물류 대행(3PL)의 접수·회신 포맷과 맞지 않았습니다.</li>
+          <li><strong>해결</strong> 3PL 접수·회신 양식을 그대로 받도록 업로드 화면을 커스터마이징했습니다(AI 제시 코드를 분석해 반영).</li>
+          <li><strong>결과</strong> 3PL 회신 엑셀을 가공 없이 업로드해 일괄 처리하는 양식이 운영에 적용됐습니다. 처리 시간 같은 수치는 측정하지 않았습니다.</li>
         </ul>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p>PHP, cURL, 채널톡 Open API, 그누보드5·영카트5</p>
@@ -149,16 +182,32 @@
         <h4>그누보드 재정보고 자동화<span class="period-mark">.</span></h4>
         <span class="time">유지보수 개선</span>
         <h5>Description<span class="period-mark">.</span></h5>
-        <p>매년 수작업으로 반복하던 재정보고 페이지 갱신 업무를 구조부터 다시 설계했습니다.</p>
-        <h5>What did I do<span class="period-mark">.</span></h5>
+        <p>연 1회 갱신하는 재정보고 페이지를 연도마다 표 코드를 늘려 가며 유지하던 구조에서, 데이터 배열과 공통 템플릿으로 바꿨습니다.</p>
+        <h5>재정보고 페이지 템플릿화<span class="period-mark">.</span></h5>
         <ul>
-          <li>계산·렌더링을 서버 공통 함수로 분리하는 데이터·표현 분리 구조로 재설계</li>
-          <li>정합성 불일치 확인 절차 수립 (계산값 대조 후 반영)</li>
+          <li><strong>문제</strong> 연도마다 표 코드를 수작업으로 늘려야 했고(하드코딩 연도 페이지 124~129줄), 클라이언트가 준 수치의 합계·퍼센트가 맞지 않는 경우가 있었습니다.</li>
+          <li><strong>원인</strong> 표 마크업과 수치가 한 코드에 하드코딩돼 연도마다 복제·수정해야 했습니다.</li>
+          <li><strong>해결</strong> 연 1회 갱신이라 관리자 화면과 DB 대신 연도 데이터 배열과 공통 템플릿으로 분리해, 합계·퍼센트를 계산값으로 표기하게 했습니다(구현 코드는 AI 제시 답변을 분석해 반영). 전달 수치가 맞지 않으면 2023년도분은 클라이언트에게 어떤 데이터로 반영할지 문의하고 기다렸고, 2024년도분은 계산 근거를 제시하며 계산값 반영을 제안해 사전에 확인받는 절차로 바꿨습니다.</li>
+          <li><strong>결과</strong> 연도 페이지가 124~129줄에서 30줄로 줄었고, 새 연도는 디렉터리와 데이터 배열만 추가하면 되도록 안내 주석을 남겼습니다. 한계: 템플릿으로 작업한 것은 2023·2024년도분 두 번(작업 시점 2024-04, 2025-04)이고 2025년도분은 받지 못해 반영하지 못했습니다. 불일치가 몇 건이었는지와 원본은 남아 있지 않고, 작업 시간 단축은 측정하지 않았습니다.</li>
         </ul>
-        <h5>Result<span class="period-mark">.</span></h5>
-        <p>연도별 페이지 코드가 표 마크업 포함 수백 줄에서 데이터 배열 수십 줄로 줄었고, 작업 시간은 20~30분에서 10분 이내로 단축됐습니다.</p>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p>PHP, 그누보드5</p>
+      </div>
+
+      <div class="project">
+        <h4>프로젝트 관리 시스템<span class="period-mark">.</span></h4>
+        <span class="time">개인 판단으로 시작 · 2025. 01 - 2025. 06 · 본업 병행</span>
+        <h5>Description<span class="period-mark">.</span></h5>
+        <p>구글 스프레드시트로 관리하던 그래픽·웹·마케팅팀의 프로젝트와 클라이언트 정보를 자사 웹사이트(그누보드5) 관리자 화면의 CRUD로 옮겼습니다. 지시 없이 시작했고 요구사항 정리, AI 제시 코드 분석·반영, CRUD 검수를 단독으로 진행했습니다.</p>
+        <h5>클라이언트 정보 중복 입력 제거<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> 개발 초기 프로젝트 폼에는 클라이언트를 텍스트로 입력하는 칸뿐이라, 한 클라이언트가 여러 프로젝트를 의뢰하면 대표·연락처·주소·담당자를 프로젝트마다 다시 입력해야 했습니다. 시트 전환 자체는 셀 수가 많아지면 입력이 막히던 과거 경험에서 한계를 예상한 판단이었습니다(이번 시트에서 겪은 한계는 아닙니다).</li>
+          <li><strong>원인</strong> 클라이언트 1 : 프로젝트 N 관계를 폼 한 곳에서 같이 다뤄, 클라이언트 상세 정보가 프로젝트에 섞여 있었습니다.</li>
+          <li><strong>해결</strong> 2025-02-18에 클라이언트 관리 화면과 별도 테이블을 만들어 상세 정보를 클라이언트 테이블에만 두고, 프로젝트 폼에서 클라이언트명을 입력하면 서버(Ajax)에서 일치 목록을 받아 선택 시 나머지 정보가 읽기 전용으로 채워지게 했습니다. 프로젝트 테이블에는 연결 기준으로 클라이언트명과 사업자번호만 저장합니다.</li>
+          <li><strong>결과</strong> 개발 종료 시점 기준 프로젝트 17건(완료 7건)을 프로젝트 관리 페이지에서, 클라이언트 42곳(유지보수 32곳)을 클라이언트 관리 페이지에서 각각 검색·관리합니다. 한계: 대표에게 사용을 제안했지만 피드백을 받지 못했고 실제 사용자는 저 혼자였으며, 파일 첨부(계약서 업로드)는 만들지 못했습니다. 부트캠프에서 RDBMS를 배운 뒤 코드를 다시 읽고, 연결 기준이 ID가 아니라 이름·사업자번호라 클라이언트 이름을 고치면 프로젝트에 저장된 이름과 어긋난다는 점을 확인했습니다(개발 당시에 발견한 것은 아닙니다). 시간 단축 같은 수치는 측정하지 않았습니다.</li>
+        </ul>
+        <h5>Tech Stack<span class="period-mark">.</span></h5>
+        <p>PHP, MySQL, 그누보드5(adm 확장), Ajax</p>
       </div>
 
     </div>
@@ -212,7 +261,7 @@
 <section id="contact">
   <h2>Contact<span class="period-mark">.</span></h2>
   <ul class="contact-list">
-    <li><a href="mailto:shfdkwnrk@gmail.com">이메일</a></li>
+    <li><a href="mailto:codribble@gmail.com">이메일</a></li>
     <li><a href="https://github.com/codribble" target="_blank" rel="noopener noreferrer">GitHub</a></li>
   </ul>
 </section>
