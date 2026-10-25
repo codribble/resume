@@ -65,14 +65,20 @@
         <span class="time">Part 2 팀 프로젝트 · FE·BE · 스터디 상세·최근 조회 담당</span>
         <h5>Description<span class="period-mark">.</span></h5>
         <p>스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스입니다. 스터디 상세·목록, 최근 조회, 응원 이모지를 맡았습니다.</p>
-        <h5>What did I do<span class="period-mark">.</span></h5>
+        <h5>최근 조회 목록이 낡은 값을 보여주던 문제<span class="period-mark">.</span></h5>
         <ul>
-          <li>최근 조회 스터디를 id만 저장, 홈 진입 시 서버 최신값 조회로 전환</li>
-          <li><code>findMany({ id: { in } })</code> 단일 쿼리로 변경, 순서 재구성·삭제분 필터 처리</li>
-          <li>빈 입력 방어를 FE·BE 양쪽에 적용</li>
+          <li><strong>문제</strong> 홈의 "최근 본 스터디"가 저장 시점의 값으로 고정돼, 이후 포인트·응원 이모지·제목이 바뀌거나 원본 스터디가 삭제돼도 옛 값이 계속 남았습니다.</li>
+          <li><strong>원인</strong> 스터디 객체 전체를 localStorage에 저장해, 화면에 보이는 값의 출처가 서버가 아니라 클라이언트의 스냅샷이었습니다.</li>
+          <li><strong>해결</strong> 저장 대상을 객체에서 id로 줄이고, 홈에 들어올 때 그 id 배열로 <code>GET /studies/recent?ids=</code>를 호출해 서버의 최신 값을 쓰게 했습니다. 포인트는 완료된 집중 세션의 <code>earnedPoint</code> 합이라 저장해 두면 낡기 때문에, 서버가 응답을 조립할 때 계산합니다.</li>
+          <li><strong>결과</strong> 최근 목록이 저장 시점이 아니라 홈 조회 시점의 서버 값으로 표시됩니다.</li>
         </ul>
-        <h5>Result<span class="period-mark">.</span></h5>
-        <p>최근 목록이 조회 시점의 서버 값으로 표시되고, id 개수와 무관하게 쿼리 1회로 처리됩니다. 일부 스터디가 삭제돼도 나머지는 정상 응답합니다.</p>
+        <h5>다건 조회의 쿼리 수와 실패 전파<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> 서버가 id마다 <code>findUniqueOrThrow</code>를 <code>Promise.all</code>로 실행해 id 개수만큼 쿼리가 나갔고, 삭제된 스터디가 하나만 섞여도 응답 전체가 에러가 됐습니다.</li>
+          <li><strong>원인</strong> 개별 조회 루프라 쿼리 수가 id 개수에 비례하고, 하나의 예외가 응답 전체로 전파됐습니다.</li>
+          <li><strong>해결</strong> <code>findMany({ id: { in } })</code> 단일 쿼리로 바꿨습니다. <code>in</code> 결과는 입력 순서를 보장하지 않아 클라이언트가 보낸 최근순을 애플리케이션에서 다시 맞췄고, 삭제돼 빠진 id는 걸러냈습니다. 빈 입력은 FE(요청을 보내지 않음)와 BE(<code>ids</code> 가드) 양쪽에서 막았습니다.</li>
+          <li><strong>결과</strong> id 개수와 무관하게 쿼리 1회로 처리되고, 일부 스터디가 삭제돼도 나머지는 정상 응답합니다. 한계: 응답 시간은 측정하지 않았습니다.</li>
+        </ul>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p>React, Vite, Express, Prisma</p>
         <p><a href="https://forest-of-study.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
@@ -83,15 +89,20 @@
         <span class="time">Part 3 팀 프로젝트 · Frontend · 마이갤러리·포토카드 생성 담당</span>
         <h5>Description<span class="period-mark">.</span></h5>
         <p>아이돌·스타·일러스트 디지털 포토카드를 사고팔고 교환하는 컬렉션 플랫폼입니다. 마이갤러리와 포토카드 생성을 맡았습니다.</p>
-        <h5>What did I do<span class="period-mark">.</span></h5>
+        <h5>필터 변경 시 리렌더 범위와 필터 UI 언마운트<span class="period-mark">.</span></h5>
         <ul>
-          <li>필터 상태 콜로케이션으로 리렌더 범위를 목록 영역으로 한정</li>
-          <li><code>isLoading</code>·<code>isFetching</code> 분리로 재조회 중 필터 UI 마운트 유지</li>
-          <li>월 생성 횟수 제한을 <code>me</code> 응답 기준 3단계 게이팅으로 설계</li>
-          <li><code>ERROR_HANDLER</code> 테이블로 에러 처리 중앙화, 캐시 무효화 누락 수정</li>
+          <li><strong>문제</strong> 마이갤러리에서 검색어·필터를 바꿀 때마다 컴포넌트 전체가 다시 렌더됐고, 새 조회가 끝나기 전에는 페이지 단위 로딩 분기가 필터 UI까지 화면에서 없앴습니다.</li>
+          <li><strong>원인</strong> 검색어·필터·페이지 상태가 최상위 컴포넌트에 있었고, 상단 요약도 필터가 걸린 같은 응답에서 값을 꺼냈습니다. 쿼리 키가 바뀌면 새 키는 캐시가 없어 로딩 상태가 다시 켜졌습니다.</li>
+          <li><strong>해결</strong> 1차로 <code>keepPreviousData</code>를 적용해 조회 중에도 이전 목록을 유지했고, 2차로 필터·검색·페이지 상태와 목록 쿼리를 <code>MyGalleryCardSection</code>으로 내려 리렌더를 목록 영역에 한정했습니다. 상단 요약은 필터를 받지 않는 고정 조회로 분리했습니다.</li>
+          <li><strong>결과</strong> 필터를 바꾸는 중에도 필터 UI가 유지되고, 필터·검색·페이지 상태가 목록 섹션 안으로 한정됩니다. 한계: 리렌더 횟수나 시간은 측정하지 않았고 전후 화면 비교 기록도 없습니다.</li>
         </ul>
-        <h5>Result<span class="period-mark">.</span></h5>
-        <p>필터 변경 시 리렌더가 목록 영역으로 한정되고 필터 UI의 상태가 유지됩니다. 잔여 횟수가 두 화면에서 일치하며 생성 직후 새로고침 없이 갱신됩니다.</p>
+        <h5>월 생성 한도 표시와 생성 직후 갱신 누락<span class="period-mark">.</span></h5>
+        <ul>
+          <li><strong>문제</strong> 월 3장 생성 한도를 화면에 표시하고 막아야 했는데, 생성 직후에도 잔여 횟수가 차감 전 값으로 남아 새로고침 전까지 갱신되지 않았습니다. 팀 QA에서 "무한 생성처럼 보인다"는 지적이 나왔습니다.</li>
+          <li><strong>원인</strong> 생성 mutation의 <code>onSuccess</code>가 갤러리·포토카드 목록만 무효화하고, 잔여 횟수의 출처인 <code>me</code> 쿼리는 무효화하지 않았습니다.</li>
+          <li><strong>해결</strong> 한도 판정은 BE가 최종으로 하고 FE는 <code>me</code> 응답으로 잔여/한도를 표시하며, 클릭·제출·서버 응답 세 지점에서 생성을 막았습니다. 누락된 <code>me</code> 쿼리 무효화를 <code>onSuccess</code>에 추가했습니다.</li>
+          <li><strong>결과</strong> 잔여가 없으면 어느 지점에서도 생성이 진행되지 않고, 생성 직후 새로고침 없이 잔여가 갱신됩니다. 한계: 한도 검증과 초기화 스케줄러는 BE 팀원 담당이고, <code>me</code> 훅과 에러 처리 테이블도 팀원이 만든 공통 모듈을 사용했습니다. 저는 FE만 담당했습니다.</li>
+        </ul>
         <h5>Tech Stack<span class="period-mark">.</span></h5>
         <p>Next.js, TanStack Query, Tailwind CSS</p>
         <p><a href="https://favorite-photo-3nergy.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
