@@ -1,280 +1,709 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>이력서 - 김상우</title>
-<meta name="description" content="Node.js·TypeScript 풀스택 개발자 김상우의 이력서. 실시간 알림(SSE), Outbox 큐 워커, 캐시 무효화 설계 등 문제 해결 과정을 정리했습니다." />
-<meta property="og:title" content="이력서 - 김상우" />
-<meta property="og:description" content="Node.js·TypeScript 풀스택 개발자 김상우의 이력서" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-<link rel="stylesheet" href="assets/portfolio.css" />
-</head>
-<body>
-<div class="container">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>이력서 - 김상우</title>
+    <meta
+      name="description"
+      content="Node.js·TypeScript 풀스택 개발자 김상우의 이력서. 실시간 알림(SSE), Outbox 큐 워커, 캐시 무효화 설계 등 문제 해결 과정을 정리했습니다."
+    />
+    <meta property="og:title" content="이력서 - 김상우" />
+    <meta
+      property="og:description"
+      content="Node.js·TypeScript 풀스택 개발자 김상우의 이력서"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
+    <link rel="stylesheet" href="assets/portfolio.css" />
+  </head>
+  <body>
+    <div class="container">
+      <section>
+        <h1>
+          반갑습니다,<br />저는 김상우입니다<span class="period-mark">.</span>
+        </h1>
+        <p class="big-paragraph">
+          실패를 전제로 재시도·동시성 같은 서버의 경계를 설계하고, 프론트엔드와
+          배포까지 함께 보는 풀스택 개발자입니다. 단순히 동작하는 코드를 넘어서
+          '왜 이런 문제가 발생했을까?', '왜 이렇게 구현했을까?'를 끊임없이
+          고민하며, 다른 대안은 없는지 찾고 더 나은 방향으로 개선해 나아가는
+          것을 중요하게 생각합니다.
+        </p>
+      </section>
 
-<section>
-  <h1>반갑습니다,<br />저는 김상우입니다<span class="period-mark">.</span></h1>
-  <p class="big-paragraph">실패를 전제로 재시도·동시성 같은 서버의 경계를 설계하고, 프론트엔드와 배포까지 함께 보는 풀스택 개발자입니다. 단순히 동작하는 코드를 넘어서 '왜 이런 문제가 발생했을까?', '왜 이렇게 구현했을까?'를 끊임없이 고민하며, 다른 대안은 없는지 찾고 더 나은 방향으로 개선해 나아가는 것을 중요하게 생각합니다.</p>
-</section>
+      <section id="projects">
+        <h2>Projects<span class="period-mark">.</span></h2>
 
-<section id="projects">
-  <h2>Projects<span class="period-mark">.</span></h2>
+        <div class="row">
+          <div class="row-left">
+            <h3>팀 프로젝트<span class="period-mark">.</span></h3>
+            <span class="role">클라우드 기반 풀스택 엔지니어</span>
+            <span>2026. 02 - 2026. 08</span>
+          </div>
+          <div class="row-right">
+            <div class="project">
+              <h4>무빙<span class="period-mark">.</span></h4>
+              <span class="time"
+                >Part 4 팀 프로젝트 · FE·BE · 견적요청·알림 담당</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을
+                다루는 이사 견적 매칭 서비스입니다. 견적요청과 실시간 알림을
+                맡았습니다.
+              </p>
+              <h5>
+                대량 알림을 Outbox 큐로 분리<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 견적 제출 때 매칭 기사 전원의 알림을
+                  제출 요청 안에서 <code>Promise.all</code>로 만들어, 대상이
+                  늘수록 응답이 길어지고 일부가 실패해도 재시도할 수 없었습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 제출 경로와 발송 경로가 한 요청에 묶여
+                  있었고, 동시성을 제한해도 제출 프로세스가 수천 건을 직접 도는
+                  구조는 그대로 남았습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 제출은
+                  <code>NotificationOutbox</code> 1건만
+                  남기고(<code>jobType</code>·<code>sourceId</code> unique로
+                  재제출에도 1건), node-cron 워커가
+                  <code>FOR UPDATE SKIP LOCKED</code>로 잡을 claim해 200명 커서
+                  청크로 발송합니다. 재시도는 5회 상한, 실패한 잡은 같은 틱에서
+                  다시 집지 않게 했고 단위 테스트로 규칙을 고정했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 부트캠프 이후 수신자 9,800명을 가정해
+                  로컬(M4 Pro, PostgreSQL 18, 기본 설정)에서 측정한 결과(워밍업
+                  1회 + 5회 반복 중앙값) 제출 경로의 알림 처리 시간이 약
+                  974ms에서 약 1ms로 줄었습니다. 한계: 알림 처리가 제출 경로에서
+                  빠진 것이지 전체 처리 시간이 줄어든 것은 아니고, 워커는
+                  9,800명을 청크 200 기준 약 0.8초에 처리하며 도착 시각은 cron
+                  주기에 따릅니다. 청크 200은 측정으로 정한 값이 아니고(측정상
+                  청크가 클수록 빨랐고, 큰 청크는 트랜잭션 점유 시간이
+                  늘어납니다), 로컬 합성 부하라 운영 수치가 아닙니다.
+                </li>
+              </ul>
+              <h5>
+                SSE 알림 클라이언트를 fetch로 구현<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 이 서비스의 인증이 Authorization 헤더
+                  기반인데 브라우저 <code>EventSource</code>는 헤더를 실을 수
+                  없어 토큰을 URL에 노출해야 했고, 토큰 만료·네트워크
+                  순단·유실분은 표준 API가 처리하지 못했습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> <code>EventSource</code>의 고정된 자동
+                  재연결 안에는 "만료 감지 → 재발급 → 새 연결"을 끼워 넣기
+                  어려웠습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> <code>fetch</code>와
+                  <code>ReadableStream</code>으로 SSE를 직접 읽는 클라이언트와
+                  파서(zod 검증)를 구현했습니다. 첫 401만 재발급 후 1회
+                  재시도하고 재발급 후에도 401이면 자동 재연결을 멈추며, 그 외
+                  끊김은 1~15초 지수 백오프로 재연결하고 재연결에 성공하면 끊긴
+                  동안의 알림을 캐치업합니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 토큰을 URL에 노출하지 않고 만료·순단에도
+                  사용자 개입 없이 스트림이 이어지도록 설계했습니다.
+                  파싱(CRLF·청크 경계·EOF 잔여 버퍼)·재연결·인증 분기를 단위
+                  테스트(Vitest)로 고정했습니다. 한계: 확인한 범위는 단위
+                  테스트까지이고 실서비스 E2E는 하지 않았습니다.
+                </li>
+              </ul>
+              <h5>
+                EC2 자동 배포 실패 원인 추적<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> BE를 AWS EC2에 올리고 GitHub Actions로
+                  main push 자동 배포를 구성하는 중, 소형 인스턴스에서 배포가
+                  4회 연속 실패하고 5회째에 성공했습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 실패마다 종료 코드와 멈춘 단계로
+                  분류했습니다(137 → 2 → 134). 137은 의존성 설치 중 OS의 OOM
+                  Kill이었고, 134는 빌드 중 V8 힙 초과였습니다. 서버를 멈춰도
+                  같은 지점에서 죽는다는 점이 단서가 되어, 스왑이 아니라 V8 힙
+                  상한 문제로 판단했습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 설치 단계의 메모리 압박에는 스왑 2GB를
+                  추가했고, 빌드에는 Node.js 힙
+                  상한(<code>--max-old-space-size=1536</code>)을 올렸습니다.
+                  스왑을 더 늘리는 안은 디스크 여유가 2.4GB뿐이라 적용하지
+                  않았습니다. 힙 값은 AI가 제안한 값을 적용했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 5회째에 배포가 성공해 GitHub Actions·PM2
+                  배포 파이프라인이 동작합니다. 얻은 기준은 137은 OS OOM, 134는
+                  V8 힙이며, 같은 지점에서 반복해 죽으면 스왑보다 V8 힙 상한을
+                  먼저 본다는 것입니다. 한계: 힙 값은 직접 실험으로 정한 것이
+                  아니고 빌드 시간은 측정하지 않았습니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>
+                Next.js, Express, Prisma, PostgreSQL, Tailwind CSS, node-cron,
+                zod, Vitest, GitHub Actions, PM2
+              </p>
+              <p>
+                <a
+                  href="https://fs12-moving-team3.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >라이브 데모</a
+                >
+              </p>
+            </div>
 
-  <div class="row">
-    <div class="row-left">
-      <h3>팀 프로젝트<span class="period-mark">.</span></h3>
-      <span class="role">클라우드 기반 풀스택 엔지니어</span>
-      <span>2026. 02 - 2026. 08</span>
+            <div class="project">
+              <h4>공부의 숲<span class="period-mark">.</span></h4>
+              <span class="time"
+                >Part 2 팀 프로젝트 · FE·BE · 스터디 상세·최근 조회 담당</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습
+                관리 서비스입니다. 스터디 상세·목록, 최근 조회, 응원 이모지를
+                맡았습니다.
+              </p>
+              <h5>
+                최근 조회 목록이 낡은 값을 보여주던 문제<span
+                  class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 홈의 "최근 본 스터디"가 스터디 목록과
+                  어긋났습니다. 응원 이모지·포인트가 바뀌어도 최근 조회 쪽에는
+                  반영되지 않았습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 상세 페이지에 들어갈 때 스터디 객체를
+                  통째로 localStorage에 저장해 두고, 이후에는 갱신하지
+                  않았습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 4가지 안을 비교했습니다. 저장 시점을
+                  페이지를 벗어날 때로 바꾸는 안과 데이터가 바뀔 때마다
+                  localStorage도 갱신하는 안은 이모지·포인트가 바뀌는 모든
+                  지점에서 이중으로 써야 해 제외했고, 최근 조회를 DB에 저장하는
+                  안은 localStorage를 쓰는 요구사항과 달라 제외했습니다. 채택한
+                  안은 localStorage에는 id만 저장하고 표시 데이터는 API로
+                  조회하는 방식이며, 목록 API에 조건을 붙이는 대신 최근 조회
+                  전용 API(<code>GET /studies/recent?ids=</code>)를 새로
+                  추가했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 최근 목록이 저장 시점이 아니라 조회
+                  시점의 서버 값으로 표시됩니다. 갱신되는 지점이 늘어도 저장
+                  쪽은 고칠 필요가 없는 구조가 됐습니다.
+                </li>
+              </ul>
+              <h5>목록의 포인트순 정렬<span class="period-mark">.</span></h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 스터디 목록에 포인트순 정렬이
+                  필요했는데, 포인트가 스터디 테이블의 컬럼이 아니라 집중 세션
+                  테이블(<code>earnedPoint</code>)의 합계라 쿼리의
+                  <code>orderBy</code>로는 정렬할 수 없었습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 정렬 기준이 다른 테이블의
+                  집계값이었습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 3가지 안을 비교했습니다. 스터디 테이블에
+                  합계 컬럼을 추가하는 안은 포인트를 얻을 때 두 테이블을 함께
+                  갱신하는 이중 쓰기와 정합성 관리가 생겨 제외했고, 프론트에서
+                  합계를 구해 재정렬하는 안은 페이지네이션과 정렬이 어긋나고
+                  서버 책임이 프론트로 넘어와 제외했습니다. 채택한 안은 조회
+                  API에서 합계를 구한 뒤 정렬해 응답하는 방식입니다. AI가
+                  <code>$queryRaw</code> 집계 쿼리를 추천했지만, 이해하지 못한
+                  코드를 일정 때문에 그대로 붙일 수 없어 ORM 조회와 애플리케이션
+                  계층 처리로 구현했습니다. 동률일 때 순서가 DB 쿼리 결과와 달라
+                  <code>createdAt</code> 기준을 추가했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 포인트순도 검색·더보기와 함께 서버에서
+                  정렬과 페이지 분할을 처리합니다. DBeaver에서 직접 실행한 쿼리
+                  결과의 순서와 화면 순서를 비교해 검증했습니다. 한계:
+                  포인트순일 때는 요청마다 검색 조건에 맞는 전체 스터디를 조회해
+                  집계·정렬하므로 스터디 수가 늘면 비용이 커지며, 이를 알고 일정
+                  안에서 감수했습니다. 응답 시간은 측정하지 않았습니다.
+                  지금이라면 포인트 전용 테이블을 두고 DB 쿼리에서
+                  집계·정렬·페이지 분할을 처리하는 방안을 검토하겠습니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>React, Vite, Express, Prisma</p>
+              <p>
+                <a
+                  href="https://forest-of-study.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >라이브 데모</a
+                >
+              </p>
+            </div>
+
+            <div class="project">
+              <h4>최애의 포토<span class="period-mark">.</span></h4>
+              <span class="time"
+                >Part 3 팀 프로젝트 · Frontend · 마이갤러리·포토카드 생성
+                담당</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                아이돌·스타·일러스트 디지털 포토카드를 사고팔고 교환하는 컬렉션
+                플랫폼입니다. 마이갤러리와 포토카드 생성을 맡았습니다.
+              </p>
+              <h5>
+                필터 변경 시 리렌더 범위와 필터 UI 언마운트<span
+                  class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 마이갤러리에서 검색어·필터를 바꿀 때마다
+                  컴포넌트 전체가 다시 렌더됐고, 새 조회가 끝나기 전에는 페이지
+                  단위 로딩 분기가 필터 UI까지 화면에서 없앴습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 검색어·필터·페이지 상태가 최상위
+                  컴포넌트에 있었고, 상단 요약도 필터가 걸린 같은 응답에서 값을
+                  꺼냈습니다. 쿼리 키가 바뀌면 새 키는 캐시가 없어 로딩 상태가
+                  다시 켜졌습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 1차로 <code>keepPreviousData</code>를
+                  적용해 조회 중에도 이전 목록을 유지했고, 2차로
+                  필터·검색·페이지 상태와 목록 쿼리를
+                  <code>MyGalleryCardSection</code>으로 내려 리렌더를 목록
+                  영역에 한정했습니다. 상단 요약은 필터를 받지 않는 고정 조회로
+                  분리했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 필터를 바꾸는 중에도 필터 UI가 유지되고,
+                  필터·검색·페이지 상태가 목록 섹션 안으로 한정됩니다. 한계:
+                  리렌더 횟수나 시간은 측정하지 않았고 전후 화면 비교 기록도
+                  없습니다.
+                </li>
+              </ul>
+              <h5>
+                월 생성 한도 표시와 생성 직후 갱신 누락<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 월 3장 생성 한도를 화면에 표시하고
+                  막아야 했는데, 생성 직후에도 잔여 횟수가 차감 전 값으로 남아
+                  새로고침 전까지 갱신되지 않았습니다. 팀 QA에서 "무한 생성처럼
+                  보인다"는 지적이 나왔습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 생성 mutation의 <code>onSuccess</code>가
+                  갤러리·포토카드 목록만 무효화하고, 잔여 횟수의 출처인
+                  <code>me</code> 쿼리는 무효화하지 않았습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 한도 판정은 BE가 최종으로 하고 FE는
+                  <code>me</code> 응답으로 잔여/한도를 표시하며, 클릭·제출·서버
+                  응답 세 지점에서 생성을 막았습니다. 누락된
+                  <code>me</code> 쿼리 무효화를 <code>onSuccess</code>에
+                  추가했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 잔여가 없으면 어느 지점에서도 생성이
+                  진행되지 않고, 생성 직후 새로고침 없이 잔여가 갱신됩니다.
+                  한계: 한도 검증과 초기화 스케줄러는 BE 팀원 담당이고,
+                  <code>me</code> 훅과 에러 처리 테이블도 팀원이 만든 공통
+                  모듈을 사용했습니다. 저는 FE만 담당했습니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>Next.js, TanStack Query, Tailwind CSS</p>
+              <p>
+                <a
+                  href="https://favorite-photo-3nergy.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >라이브 데모</a
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-left">
+            <h3>개인 프로젝트<span class="period-mark">.</span></h3>
+            <span class="role">사이드 프로젝트</span>
+            <span>2026. 09 - 현재</span>
+          </div>
+          <div class="row-right">
+            <div class="project">
+              <h4>띠오늘<span class="period-mark">.</span></h4>
+              <span class="time"
+                >사이드 프로젝트 · FE·BE 에이전트 오케스트레이션 · 진행 중</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                운세 웹서비스를 만드는 사이드 프로젝트입니다(결제를 제외한
+                범위로 진행 중). 기획·인프라·AI 프롬프트를 맡은 공동 진행자와
+                역할을 나눠, 저는 FE·BE 구현을 에이전트에게 맡기고 요구사항
+                분해·API 계약 정리·승인·검수를 맡았습니다.
+              </p>
+              <h5>
+                에이전트 병렬 작업의 변경 범위와 승인 지점<span
+                  class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> FE·BE를 병렬로 진행하면서 에이전트가
+                  서로의 영역과 공유 DB를 건드리지 않게 하려면 에이전트별 변경
+                  범위와 승인 지점을 먼저 정해야 했습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> BE가 공유 DB를 쓰는 구조에서 FE·BE
+                  에이전트가 동시에 작업하는 방식이라, 구현을 맡기기 전에 규칙이
+                  없으면 변경이 서로 겹치거나 DB에 바로 반영될 수 있었습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 오케스트레이터와 FE·BE 전담 에이전트로
+                  역할을 나누고 상대 영역은 읽기 전용으로 두었습니다. API 계약
+                  문서를 먼저 고친 뒤 구현하는 규칙을 세우고, 작업을
+                  정의→계획→구현→검증→리뷰→배포 준비 6단계로 고정했으며 DB
+                  반영·main 머지는 승인 후에만, 시안·계약에 없는 것은 구현 대신
+                  보고하게 했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 변경 범위와 승인 지점이 규칙으로 정해져
+                  FE·BE 작업이 서로의 영역을 건드리지 않고 병렬로 진행되고
+                  있습니다. 한계: 구현은 에이전트가 맡았고 저는 요구사항
+                  분해·API 계약 정리·승인·검수를 맡았습니다.
+                </li>
+              </ul>
+              <h5>
+                화면 제목의 띠 표기 불일치<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 오늘의 운세 화면 제목이 입력한
+                  생년월일의 띠(뱀띠)와 다른 동물('쥐')로 표시됐고, 시안은
+                  "토끼띠 오늘의 운세"였습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 운세 데이터가 년주 띠가 아니라
+                  일주(60갑자) 기준이라, 일주에 대응하는 동물이 화면에 나오고
+                  있었습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 공동 진행자와 협의해 제목을
+                  <code>{년주 띠}띠 {일주}일생 오늘의 운세</code>(예: 돼지띠
+                  을묘일생)로 정하고, 커뮤니티 이동은 년주 띠 기준으로 하기로
+                  확정했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 확정한 표기대로 구현됐습니다. 한계:
+                  결제·Plus 등 3단계 이후 기능은 범위에서 제외했고, 프로젝트는
+                  진행 중입니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>Next.js, Express, Prisma, MySQL, Claude Code</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="career">
+        <h2>Work Experience<span class="period-mark">.</span></h2>
+
+        <div class="row">
+          <div class="row-left">
+            <h3>꼴크리에이티브<span class="period-mark">.</span></h3>
+            <span class="role">과장</span>
+            <span>2017. 02 - 2026. 01</span>
+          </div>
+          <div class="row-right">
+            <div class="project">
+              <h4>
+                비대면 진료 이커머스 플랫폼<span class="period-mark">.</span>
+              </h4>
+              <span class="time"
+                >기획 단계부터 참여 · 채널톡 연동·3PL 양식 개발 · 외주
+                검수</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료
+                이커머스 플랫폼에 기획 단계부터 참여했습니다. 3사 요구사항을
+                취합·문서화하고 유저 플로우를 설계했으며, 오픈 전 필수 여부로
+                우선순위를 정해 일정에 맞춰 오픈했고, 외주 개발분은 완료 때마다
+                검수해 재요청했습니다. 외주 개발사가 구현한 부분은 제 구현에서
+                제외했습니다.
+              </p>
+              <h5>
+                로그아웃 후 식별 정보 잔존<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 로그아웃한 비회원 문의창에 이전 회원의
+                  이름·연락처가 남는 것을 직접 문의 테스트 중 발견했습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 쇼핑몰 로그아웃과 채널톡 사용자 식별이
+                  따로 동작했고, 기존 로그아웃은 PHP 리다이렉트로 바로 이동해
+                  채널톡 종료 스크립트가 실행되지 않았습니다. 원인은 AI와 함께
+                  좁힌 가설입니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 로그아웃 페이지에서 채널톡을 먼저 종료한
+                  뒤 이동하도록 바꿨습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 비회원 화면으로 열어 이전 회원의 식별
+                  정보가 비워지는 것을 직접 확인했습니다.
+                </li>
+              </ul>
+              <h5>
+                결제일시가 채널톡에 반영되지 않던 문제<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 무통장 입금확인 후 결제일시가 채널톡
+                  상담 화면에 반영되지 않았습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 서버 출력과 통제 테스트로 조건을 하나씩
+                  따라가며 채널톡 수정 호출(PATCH)이 422로 실패하는 것을
+                  확인했습니다. PATCH가 실패한 이유 자체는 확인하지 못했습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> PUT으로 바꿨습니다. 경위는 AI 초안 PATCH
+                  → AI 제안 PUT → AI 추천 PATCH(검증 없이 적용) → 422 실패 → PUT
+                  복귀이며, PUT으로 반영되는 것을 직접 확인했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 결제일시가 채널톡에 반영됩니다. 한계:
+                  채널톡 공식 문서와 대조하지 않아 스펙상 차이는 단정하지
+                  않습니다.
+                </li>
+              </ul>
+              <h5>
+                3PL 회신 엑셀 일괄 송장 등록<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 배송 송장 등록이 반복 수작업이었습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> CMS 일괄배송 엑셀 양식이 물류
+                  대행(3PL)의 접수·회신 포맷과 맞지 않았습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 3PL 접수·회신 양식을 그대로 받도록
+                  업로드 화면을 커스터마이징했습니다(AI 제시 코드를 분석해
+                  반영).
+                </li>
+                <li>
+                  <strong>결과</strong> 3PL 회신 엑셀을 가공 없이 업로드해 일괄
+                  처리하는 양식이 운영에 적용됐습니다. 처리 시간 같은 수치는
+                  측정하지 않았습니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>PHP, cURL, 채널톡 Open API, 그누보드5·영카트5</p>
+            </div>
+
+            <div class="project">
+              <h4>재정보고 템플릿화<span class="period-mark">.</span></h4>
+              <span class="time">유지보수 개선</span>
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                연 1회 갱신하는 재정보고 페이지를 연도마다 표 코드를 늘려 가며
+                유지하던 구조에서, 데이터 배열과 공통 템플릿으로 바꿨습니다.
+              </p>
+              <h5>
+                연도별 하드코딩 표를 공통 템플릿으로<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 연도마다 표 코드를 수작업으로 늘려야
+                  했고(하드코딩 연도 페이지 124~129줄), 클라이언트가 준 수치의
+                  합계·퍼센트가 맞지 않는 경우가 있었습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 표 마크업과 수치가 한 코드에 하드코딩돼
+                  연도마다 복제·수정해야 했습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 연 1회 갱신이라 관리자 화면과 DB 대신
+                  연도 데이터 배열과 공통 템플릿으로 분리해, 합계·퍼센트를
+                  계산값으로 표기하게 했습니다(구현 코드는 AI 제시 답변을 분석해
+                  반영). 전달 수치가 맞지 않으면 2023년도분은 클라이언트에게
+                  어떤 데이터로 반영할지 문의하고 기다렸고, 2024년도분은 계산
+                  근거를 제시하며 계산값 반영을 제안해 사전에 확인받는 절차로
+                  바꿨습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 연도 페이지가 124~129줄에서 30줄로
+                  줄었고, 새 연도는 디렉터리와 데이터 배열만 추가하면 되도록
+                  안내 주석을 남겼습니다. 한계: 템플릿으로 작업한 것은
+                  2023·2024년도분 두 번(작업 시점 2024-04, 2025-04)이고
+                  2025년도분은 받지 못해 반영하지 못했습니다. 불일치가 몇
+                  건이었는지와 원본은 남아 있지 않고, 작업 시간 단축은 측정하지
+                  않았습니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>PHP, 그누보드5</p>
+            </div>
+
+            <div class="project">
+              <h4>프로젝트 관리 시스템<span class="period-mark">.</span></h4>
+              <span class="time"
+                >개인 판단으로 시작 · 2025. 01 - 2025. 06 · 본업 병행</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                구글 스프레드시트로 관리하던 그래픽·웹·마케팅팀의 프로젝트와
+                클라이언트 정보를 자사 웹사이트(그누보드5) 관리자 화면의 CRUD로
+                옮겼습니다. 지시 없이 시작했고 요구사항 정리, AI 제시 코드
+                분석·반영, CRUD 검수를 단독으로 진행했습니다.
+              </p>
+              <h5>
+                클라이언트 정보 중복 입력 제거<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 개발 초기 프로젝트 폼에는 클라이언트를
+                  텍스트로 입력하는 칸뿐이라, 한 클라이언트가 여러 프로젝트를
+                  의뢰하면 대표·연락처·주소·담당자를 프로젝트마다 다시 입력해야
+                  했습니다. 시트 전환 자체는 셀 수가 많아지면 입력이 막히던 과거
+                  경험에서 한계를 예상한 판단이었습니다(이번 시트에서 겪은
+                  한계는 아닙니다).
+                </li>
+                <li>
+                  <strong>원인</strong> 클라이언트 1 : 프로젝트 N 관계를 폼 한
+                  곳에서 같이 다뤄, 클라이언트 상세 정보가 프로젝트에 섞여
+                  있었습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 2025-02-18에 클라이언트 관리 화면과 별도
+                  테이블을 만들어 상세 정보를 클라이언트 테이블에만 두고,
+                  프로젝트 폼에서 클라이언트명을 입력하면 서버(Ajax)에서 일치
+                  목록을 받아 선택 시 나머지 정보가 읽기 전용으로 채워지게
+                  했습니다. 프로젝트 테이블에는 연결 기준으로 클라이언트명과
+                  사업자번호만 저장합니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 개발 종료 시점 기준 프로젝트 17건(완료
+                  7건)을 프로젝트 관리 페이지에서, 클라이언트 42곳(유지보수
+                  32곳)을 클라이언트 관리 페이지에서 각각 검색·관리합니다. 한계:
+                  대표에게 사용을 제안했지만 피드백을 받지 못했고 실제 사용자는
+                  저 혼자였으며, 파일 첨부(계약서 업로드)는 만들지 못했습니다.
+                  부트캠프에서 RDBMS를 배운 뒤 코드를 다시 읽고, 연결 기준이
+                  ID가 아니라 이름·사업자번호라 클라이언트 이름을 고치면
+                  프로젝트에 저장된 이름과 어긋난다는 점을 확인했습니다(개발
+                  당시에 발견한 것은 아닙니다). 시간 단축 같은 수치는 측정하지
+                  않았습니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>PHP, MySQL, 그누보드5(adm 확장), Ajax</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Education<span class="period-mark">.</span></h2>
+        <div class="row">
+          <div class="row-left">
+            <h3>코드잇 부트캠프<span class="period-mark">.</span></h3>
+            <span class="role">클라우드 기반 풀스택 엔지니어</span>
+            <span>2026. 02 - 2026. 08</span>
+          </div>
+          <div class="row-right">
+            <p>
+              Part 1 미니 프로젝트부터 Part 4 팀 프로젝트까지 수행했습니다.
+              (Part 2 공부의 숲, Part 3 최애의 포토, Part 4 무빙)
+            </p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="row-left">
+            <h3>수원과학대학교<span class="period-mark">.</span></h3>
+            <span class="role">정보통신학과</span>
+            <span>2008. 03 - 2013. 02</span>
+          </div>
+          <div class="row-right">
+            <p>전문학사</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="skills">
+        <h2>Skills<span class="period-mark">.</span></h2>
+        <div class="skill-group">
+          <h5>Language<span class="period-mark">.</span></h5>
+          <p>TypeScript, JavaScript</p>
+        </div>
+        <div class="skill-group">
+          <h5>Frontend<span class="period-mark">.</span></h5>
+          <p>React, Next.js, TanStack Query, Tailwind CSS</p>
+        </div>
+        <div class="skill-group">
+          <h5>Backend<span class="period-mark">.</span></h5>
+          <p>Node.js, Express, Prisma, PostgreSQL</p>
+        </div>
+        <div class="skill-group">
+          <h5>Infra · Tools<span class="period-mark">.</span></h5>
+          <p>
+            Amazon EC2, Amazon RDS, Amazon S3, SSE·Web Streams, node-cron, zod,
+            GitHub Actions, PM2
+          </p>
+        </div>
+      </section>
+
+      <section id="contact">
+        <h2>Contact<span class="period-mark">.</span></h2>
+        <ul class="contact-list">
+          <li><a href="mailto:codribble@gmail.com">이메일</a></li>
+          <li>
+            <a
+              href="https://github.com/codribble"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub</a
+            >
+          </li>
+        </ul>
+      </section>
     </div>
-    <div class="row-right">
-
-      <div class="project">
-        <h4>무빙<span class="period-mark">.</span></h4>
-        <span class="time">Part 4 팀 프로젝트 · FE·BE · 견적요청·알림 담당</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>이사 견적 요청·매칭, 실시간 채팅, 리뷰·커뮤니티, 관리자 운영을 다루는 이사 견적 매칭 서비스입니다. 견적요청과 실시간 알림을 맡았습니다.</p>
-        <h5>대량 알림을 Outbox 큐로 분리<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 견적 제출 때 매칭 기사 전원의 알림을 제출 요청 안에서 <code>Promise.all</code>로 만들어, 대상이 늘수록 응답이 길어지고 일부가 실패해도 재시도할 수 없었습니다.</li>
-          <li><strong>원인</strong> 제출 경로와 발송 경로가 한 요청에 묶여 있었고, 동시성을 제한해도 제출 프로세스가 수천 건을 직접 도는 구조는 그대로 남았습니다.</li>
-          <li><strong>해결</strong> 제출은 <code>NotificationOutbox</code> 1건만 남기고(<code>jobType</code>·<code>sourceId</code> unique로 재제출에도 1건), node-cron 워커가 <code>FOR UPDATE SKIP LOCKED</code>로 잡을 claim해 200명 커서 청크로 발송합니다. 재시도는 5회 상한, 실패한 잡은 같은 틱에서 다시 집지 않게 했고 단위 테스트로 규칙을 고정했습니다.</li>
-          <li><strong>결과</strong> 부트캠프 이후 수신자 9,800명을 가정해 로컬(M4 Pro, PostgreSQL 18, 기본 설정)에서 측정한 결과(워밍업 1회 + 5회 반복 중앙값) 제출 경로의 알림 처리 시간이 약 974ms에서 약 1ms로 줄었습니다. 한계: 알림 처리가 제출 경로에서 빠진 것이지 전체 처리 시간이 줄어든 것은 아니고, 워커는 9,800명을 청크 200 기준 약 0.8초에 처리하며 도착 시각은 cron 주기에 따릅니다. 청크 200은 측정으로 정한 값이 아니고(측정상 청크가 클수록 빨랐고, 큰 청크는 트랜잭션 점유 시간이 늘어납니다), 로컬 합성 부하라 운영 수치가 아닙니다.</li>
-        </ul>
-        <h5>SSE 알림 클라이언트를 fetch로 구현<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 이 서비스의 인증이 Authorization 헤더 기반인데 브라우저 <code>EventSource</code>는 헤더를 실을 수 없어 토큰을 URL에 노출해야 했고, 토큰 만료·네트워크 순단·유실분은 표준 API가 처리하지 못했습니다.</li>
-          <li><strong>원인</strong> <code>EventSource</code>의 고정된 자동 재연결 안에는 "만료 감지 → 재발급 → 새 연결"을 끼워 넣기 어려웠습니다.</li>
-          <li><strong>해결</strong> <code>fetch</code>와 <code>ReadableStream</code>으로 SSE를 직접 읽는 클라이언트와 파서(zod 검증)를 구현했습니다. 첫 401만 재발급 후 1회 재시도하고 재발급 후에도 401이면 자동 재연결을 멈추며, 그 외 끊김은 1~15초 지수 백오프로 재연결하고 재연결에 성공하면 끊긴 동안의 알림을 캐치업합니다.</li>
-          <li><strong>결과</strong> 토큰을 URL에 노출하지 않고 만료·순단에도 사용자 개입 없이 스트림이 이어지도록 설계했습니다. 파싱(CRLF·청크 경계·EOF 잔여 버퍼)·재연결·인증 분기를 단위 테스트(Vitest)로 고정했습니다. 한계: 확인한 범위는 단위 테스트까지이고 실서비스 E2E는 하지 않았습니다.</li>
-        </ul>
-        <h5>EC2 자동 배포 실패 원인 추적<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> BE를 AWS EC2에 올리고 GitHub Actions로 main push 자동 배포를 구성하는 중, 소형 인스턴스에서 배포가 4회 연속 실패하고 5회째에 성공했습니다.</li>
-          <li><strong>원인</strong> 실패마다 종료 코드와 멈춘 단계로 분류했습니다(137 → 2 → 134). 137은 의존성 설치 중 OS의 OOM Kill이었고, 134는 빌드 중 V8 힙 초과였습니다. 서버를 멈춰도 같은 지점에서 죽는다는 점이 단서가 되어, 스왑이 아니라 V8 힙 상한 문제로 판단했습니다.</li>
-          <li><strong>해결</strong> 설치 단계의 메모리 압박에는 스왑 2GB를 추가했고, 빌드에는 Node.js 힙 상한(<code>--max-old-space-size=1536</code>)을 올렸습니다. 스왑을 더 늘리는 안은 디스크 여유가 2.4GB뿐이라 적용하지 않았습니다. 힙 값은 AI가 제안한 값을 적용했습니다.</li>
-          <li><strong>결과</strong> 5회째에 배포가 성공해 GitHub Actions·PM2 배포 파이프라인이 동작합니다. 얻은 기준은 137은 OS OOM, 134는 V8 힙이며, 같은 지점에서 반복해 죽으면 스왑보다 V8 힙 상한을 먼저 본다는 것입니다. 한계: 힙 값은 직접 실험으로 정한 것이 아니고 빌드 시간은 측정하지 않았습니다.</li>
-        </ul>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>Next.js, Express, Prisma, PostgreSQL, Tailwind CSS, node-cron, zod, Vitest, GitHub Actions, PM2</p>
-        <p><a href="https://fs12-moving-team3.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
-      </div>
-
-      <div class="project">
-        <h4>공부의 숲<span class="period-mark">.</span></h4>
-        <span class="time">Part 2 팀 프로젝트 · FE·BE · 스터디 상세·최근 조회 담당</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>스터디 개설·상세, 오늘의 습관 토글, 집중 타이머를 제공하는 학습 관리 서비스입니다. 스터디 상세·목록, 최근 조회, 응원 이모지를 맡았습니다.</p>
-        <h5>최근 조회 목록이 낡은 값을 보여주던 문제<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 홈의 "최근 본 스터디"가 스터디 목록과 어긋났습니다. 응원 이모지·포인트가 바뀌어도 최근 조회 쪽에는 반영되지 않았습니다.</li>
-          <li><strong>원인</strong> 상세 페이지에 들어갈 때 스터디 객체를 통째로 localStorage에 저장해 두고, 이후에는 갱신하지 않았습니다.</li>
-          <li><strong>해결</strong> 4가지 안을 비교했습니다. 저장 시점을 페이지를 벗어날 때로 바꾸는 안과 데이터가 바뀔 때마다 localStorage도 갱신하는 안은 이모지·포인트가 바뀌는 모든 지점에서 이중으로 써야 해 제외했고, 최근 조회를 DB에 저장하는 안은 localStorage를 쓰는 요구사항과 달라 제외했습니다. 채택한 안은 localStorage에는 id만 저장하고 표시 데이터는 API로 조회하는 방식이며, 목록 API에 조건을 붙이는 대신 최근 조회 전용 API(<code>GET /studies/recent?ids=</code>)를 새로 추가했습니다.</li>
-          <li><strong>결과</strong> 최근 목록이 저장 시점이 아니라 조회 시점의 서버 값으로 표시됩니다. 갱신되는 지점이 늘어도 저장 쪽은 고칠 필요가 없는 구조가 됐습니다.</li>
-        </ul>
-        <h5>목록의 포인트순 정렬<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 스터디 목록에 포인트순 정렬이 필요했는데, 포인트가 스터디 테이블의 컬럼이 아니라 집중 세션 테이블(<code>earnedPoint</code>)의 합계라 쿼리의 <code>orderBy</code>로는 정렬할 수 없었습니다.</li>
-          <li><strong>원인</strong> 정렬 기준이 다른 테이블의 집계값이었습니다.</li>
-          <li><strong>해결</strong> 3가지 안을 비교했습니다. 스터디 테이블에 합계 컬럼을 추가하는 안은 포인트를 얻을 때 두 테이블을 함께 갱신하는 이중 쓰기와 정합성 관리가 생겨 제외했고, 프론트에서 합계를 구해 재정렬하는 안은 페이지네이션과 정렬이 어긋나고 서버 책임이 프론트로 넘어와 제외했습니다. 채택한 안은 조회 API에서 합계를 구한 뒤 정렬해 응답하는 방식입니다. AI가 <code>$queryRaw</code> 집계 쿼리를 추천했지만, 이해하지 못한 코드를 일정 때문에 그대로 붙일 수 없어 ORM 조회와 애플리케이션 계층 처리로 구현했습니다. 동률일 때 순서가 DB 쿼리 결과와 달라 <code>createdAt</code> 기준을 추가했습니다.</li>
-          <li><strong>결과</strong> 포인트순도 검색·더보기와 함께 서버에서 정렬과 페이지 분할을 처리합니다. DBeaver에서 직접 실행한 쿼리 결과의 순서와 화면 순서를 비교해 검증했습니다. 한계: 포인트순일 때는 요청마다 검색 조건에 맞는 전체 스터디를 조회해 집계·정렬하므로 스터디 수가 늘면 비용이 커지며, 이를 알고 일정 안에서 감수했습니다. 응답 시간은 측정하지 않았습니다. 지금이라면 포인트 전용 테이블을 두고 DB 쿼리에서 집계·정렬·페이지 분할을 처리하는 방안을 검토하겠습니다.</li>
-        </ul>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>React, Vite, Express, Prisma</p>
-        <p><a href="https://forest-of-study.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
-      </div>
-
-      <div class="project">
-        <h4>최애의 포토<span class="period-mark">.</span></h4>
-        <span class="time">Part 3 팀 프로젝트 · Frontend · 마이갤러리·포토카드 생성 담당</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>아이돌·스타·일러스트 디지털 포토카드를 사고팔고 교환하는 컬렉션 플랫폼입니다. 마이갤러리와 포토카드 생성을 맡았습니다.</p>
-        <h5>필터 변경 시 리렌더 범위와 필터 UI 언마운트<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 마이갤러리에서 검색어·필터를 바꿀 때마다 컴포넌트 전체가 다시 렌더됐고, 새 조회가 끝나기 전에는 페이지 단위 로딩 분기가 필터 UI까지 화면에서 없앴습니다.</li>
-          <li><strong>원인</strong> 검색어·필터·페이지 상태가 최상위 컴포넌트에 있었고, 상단 요약도 필터가 걸린 같은 응답에서 값을 꺼냈습니다. 쿼리 키가 바뀌면 새 키는 캐시가 없어 로딩 상태가 다시 켜졌습니다.</li>
-          <li><strong>해결</strong> 1차로 <code>keepPreviousData</code>를 적용해 조회 중에도 이전 목록을 유지했고, 2차로 필터·검색·페이지 상태와 목록 쿼리를 <code>MyGalleryCardSection</code>으로 내려 리렌더를 목록 영역에 한정했습니다. 상단 요약은 필터를 받지 않는 고정 조회로 분리했습니다.</li>
-          <li><strong>결과</strong> 필터를 바꾸는 중에도 필터 UI가 유지되고, 필터·검색·페이지 상태가 목록 섹션 안으로 한정됩니다. 한계: 리렌더 횟수나 시간은 측정하지 않았고 전후 화면 비교 기록도 없습니다.</li>
-        </ul>
-        <h5>월 생성 한도 표시와 생성 직후 갱신 누락<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 월 3장 생성 한도를 화면에 표시하고 막아야 했는데, 생성 직후에도 잔여 횟수가 차감 전 값으로 남아 새로고침 전까지 갱신되지 않았습니다. 팀 QA에서 "무한 생성처럼 보인다"는 지적이 나왔습니다.</li>
-          <li><strong>원인</strong> 생성 mutation의 <code>onSuccess</code>가 갤러리·포토카드 목록만 무효화하고, 잔여 횟수의 출처인 <code>me</code> 쿼리는 무효화하지 않았습니다.</li>
-          <li><strong>해결</strong> 한도 판정은 BE가 최종으로 하고 FE는 <code>me</code> 응답으로 잔여/한도를 표시하며, 클릭·제출·서버 응답 세 지점에서 생성을 막았습니다. 누락된 <code>me</code> 쿼리 무효화를 <code>onSuccess</code>에 추가했습니다.</li>
-          <li><strong>결과</strong> 잔여가 없으면 어느 지점에서도 생성이 진행되지 않고, 생성 직후 새로고침 없이 잔여가 갱신됩니다. 한계: 한도 검증과 초기화 스케줄러는 BE 팀원 담당이고, <code>me</code> 훅과 에러 처리 테이블도 팀원이 만든 공통 모듈을 사용했습니다. 저는 FE만 담당했습니다.</li>
-        </ul>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>Next.js, TanStack Query, Tailwind CSS</p>
-        <p><a href="https://favorite-photo-3nergy.vercel.app" target="_blank" rel="noopener noreferrer">라이브 데모</a></p>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="row-left">
-      <h3>개인 프로젝트<span class="period-mark">.</span></h3>
-      <span class="role">사이드 프로젝트</span>
-      <span>2026. 09 - 현재</span>
-    </div>
-    <div class="row-right">
-
-      <div class="project">
-        <h4>띠오늘<span class="period-mark">.</span></h4>
-        <span class="time">사이드 프로젝트 · FE·BE 에이전트 오케스트레이션 · 진행 중</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>운세 웹서비스를 만드는 사이드 프로젝트입니다(결제를 제외한 범위로 진행 중). 기획·인프라·AI 프롬프트를 맡은 공동 진행자와 역할을 나눠, 저는 FE·BE 구현을 에이전트에게 맡기고 요구사항 분해·API 계약 정리·승인·검수를 맡았습니다.</p>
-        <h5>에이전트 병렬 작업의 변경 범위와 승인 지점<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> FE·BE를 병렬로 진행하면서 에이전트가 서로의 영역과 공유 DB를 건드리지 않게 하려면 에이전트별 변경 범위와 승인 지점을 먼저 정해야 했습니다.</li>
-          <li><strong>원인</strong> BE가 공유 DB를 쓰는 구조에서 FE·BE 에이전트가 동시에 작업하는 방식이라, 구현을 맡기기 전에 규칙이 없으면 변경이 서로 겹치거나 DB에 바로 반영될 수 있었습니다.</li>
-          <li><strong>해결</strong> 오케스트레이터와 FE·BE 전담 에이전트로 역할을 나누고 상대 영역은 읽기 전용으로 두었습니다. API 계약 문서를 먼저 고친 뒤 구현하는 규칙을 세우고, 작업을 정의→계획→구현→검증→리뷰→배포 준비 6단계로 고정했으며 DB 반영·main 머지는 승인 후에만, 시안·계약에 없는 것은 구현 대신 보고하게 했습니다.</li>
-          <li><strong>결과</strong> 변경 범위와 승인 지점이 규칙으로 정해져 FE·BE 작업이 서로의 영역을 건드리지 않고 병렬로 진행되고 있습니다. 한계: 구현은 에이전트가 맡았고 저는 요구사항 분해·API 계약 정리·승인·검수를 맡았습니다.</li>
-        </ul>
-        <h5>화면 제목의 띠 표기 불일치<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 오늘의 운세 화면 제목이 입력한 생년월일의 띠(뱀띠)와 다른 동물('쥐')로 표시됐고, 시안은 "토끼띠 오늘의 운세"였습니다.</li>
-          <li><strong>원인</strong> 운세 데이터가 년주 띠가 아니라 일주(60갑자) 기준이라, 일주에 대응하는 동물이 화면에 나오고 있었습니다.</li>
-          <li><strong>해결</strong> 공동 진행자와 협의해 제목을 <code>{년주 띠}띠 {일주}일생 오늘의 운세</code>(예: 돼지띠 을묘일생)로 정하고, 커뮤니티 이동은 년주 띠 기준으로 하기로 확정했습니다.</li>
-          <li><strong>결과</strong> 확정한 표기대로 구현됐습니다. 한계: 결제·Plus 등 3단계 이후 기능은 범위에서 제외했고, 프로젝트는 진행 중입니다.</li>
-        </ul>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>Next.js, Express, Prisma, MySQL, Claude Code</p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<section id="career">
-  <h2>Work Experience<span class="period-mark">.</span></h2>
-
-  <div class="row">
-    <div class="row-left">
-      <h3>꼴크리에이티브<span class="period-mark">.</span></h3>
-      <span class="role">과장</span>
-      <span>2017. 02 - 2026. 01</span>
-    </div>
-    <div class="row-right">
-
-      <div class="project">
-        <h4>비대면 진료 이커머스 플랫폼<span class="period-mark">.</span></h4>
-        <span class="time">기획 단계부터 참여 · 채널톡 연동·3PL 양식 개발 · 외주 검수</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료 이커머스 플랫폼에 기획 단계부터 참여했습니다. 3사 요구사항을 취합·문서화하고 유저 플로우를 설계했으며, 오픈 전 필수 여부로 우선순위를 정해 일정에 맞춰 오픈했고, 외주 개발분은 완료 때마다 검수해 재요청했습니다. 외주 개발사가 구현한 부분은 제 구현에서 제외했습니다.</p>
-        <h5>로그아웃 후 식별 정보 잔존<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 로그아웃한 비회원 문의창에 이전 회원의 이름·연락처가 남는 것을 직접 문의 테스트 중 발견했습니다.</li>
-          <li><strong>원인</strong> 쇼핑몰 로그아웃과 채널톡 사용자 식별이 따로 동작했고, 기존 로그아웃은 PHP 리다이렉트로 바로 이동해 채널톡 종료 스크립트가 실행되지 않았습니다. 원인은 AI와 함께 좁힌 가설입니다.</li>
-          <li><strong>해결</strong> 로그아웃 페이지에서 채널톡을 먼저 종료한 뒤 이동하도록 바꿨습니다.</li>
-          <li><strong>결과</strong> 비회원 화면으로 열어 이전 회원의 식별 정보가 비워지는 것을 직접 확인했습니다.</li>
-        </ul>
-        <h5>결제일시가 채널톡에 반영되지 않던 문제<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 무통장 입금확인 후 결제일시가 채널톡 상담 화면에 반영되지 않았습니다.</li>
-          <li><strong>원인</strong> 서버 출력과 통제 테스트로 조건을 하나씩 따라가며 채널톡 수정 호출(PATCH)이 422로 실패하는 것을 확인했습니다. PATCH가 실패한 이유 자체는 확인하지 못했습니다.</li>
-          <li><strong>해결</strong> PUT으로 바꿨습니다. 경위는 AI 초안 PATCH → AI 제안 PUT → AI 추천 PATCH(검증 없이 적용) → 422 실패 → PUT 복귀이며, PUT으로 반영되는 것을 직접 확인했습니다.</li>
-          <li><strong>결과</strong> 결제일시가 채널톡에 반영됩니다. 한계: 채널톡 공식 문서와 대조하지 않아 스펙상 차이는 단정하지 않습니다.</li>
-        </ul>
-        <h5>3PL 회신 엑셀 일괄 송장 등록<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 배송 송장 등록이 반복 수작업이었습니다.</li>
-          <li><strong>원인</strong> CMS 일괄배송 엑셀 양식이 물류 대행(3PL)의 접수·회신 포맷과 맞지 않았습니다.</li>
-          <li><strong>해결</strong> 3PL 접수·회신 양식을 그대로 받도록 업로드 화면을 커스터마이징했습니다(AI 제시 코드를 분석해 반영).</li>
-          <li><strong>결과</strong> 3PL 회신 엑셀을 가공 없이 업로드해 일괄 처리하는 양식이 운영에 적용됐습니다. 처리 시간 같은 수치는 측정하지 않았습니다.</li>
-        </ul>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>PHP, cURL, 채널톡 Open API, 그누보드5·영카트5</p>
-      </div>
-
-      <div class="project">
-        <h4>재정보고 템플릿화<span class="period-mark">.</span></h4>
-        <span class="time">유지보수 개선</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>연 1회 갱신하는 재정보고 페이지를 연도마다 표 코드를 늘려 가며 유지하던 구조에서, 데이터 배열과 공통 템플릿으로 바꿨습니다.</p>
-        <h5>연도별 하드코딩 표를 공통 템플릿으로<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 연도마다 표 코드를 수작업으로 늘려야 했고(하드코딩 연도 페이지 124~129줄), 클라이언트가 준 수치의 합계·퍼센트가 맞지 않는 경우가 있었습니다.</li>
-          <li><strong>원인</strong> 표 마크업과 수치가 한 코드에 하드코딩돼 연도마다 복제·수정해야 했습니다.</li>
-          <li><strong>해결</strong> 연 1회 갱신이라 관리자 화면과 DB 대신 연도 데이터 배열과 공통 템플릿으로 분리해, 합계·퍼센트를 계산값으로 표기하게 했습니다(구현 코드는 AI 제시 답변을 분석해 반영). 전달 수치가 맞지 않으면 2023년도분은 클라이언트에게 어떤 데이터로 반영할지 문의하고 기다렸고, 2024년도분은 계산 근거를 제시하며 계산값 반영을 제안해 사전에 확인받는 절차로 바꿨습니다.</li>
-          <li><strong>결과</strong> 연도 페이지가 124~129줄에서 30줄로 줄었고, 새 연도는 디렉터리와 데이터 배열만 추가하면 되도록 안내 주석을 남겼습니다. 한계: 템플릿으로 작업한 것은 2023·2024년도분 두 번(작업 시점 2024-04, 2025-04)이고 2025년도분은 받지 못해 반영하지 못했습니다. 불일치가 몇 건이었는지와 원본은 남아 있지 않고, 작업 시간 단축은 측정하지 않았습니다.</li>
-        </ul>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>PHP, 그누보드5</p>
-      </div>
-
-      <div class="project">
-        <h4>프로젝트 관리 시스템<span class="period-mark">.</span></h4>
-        <span class="time">개인 판단으로 시작 · 2025. 01 - 2025. 06 · 본업 병행</span>
-        <h5>Description<span class="period-mark">.</span></h5>
-        <p>구글 스프레드시트로 관리하던 그래픽·웹·마케팅팀의 프로젝트와 클라이언트 정보를 자사 웹사이트(그누보드5) 관리자 화면의 CRUD로 옮겼습니다. 지시 없이 시작했고 요구사항 정리, AI 제시 코드 분석·반영, CRUD 검수를 단독으로 진행했습니다.</p>
-        <h5>클라이언트 정보 중복 입력 제거<span class="period-mark">.</span></h5>
-        <ul>
-          <li><strong>문제</strong> 개발 초기 프로젝트 폼에는 클라이언트를 텍스트로 입력하는 칸뿐이라, 한 클라이언트가 여러 프로젝트를 의뢰하면 대표·연락처·주소·담당자를 프로젝트마다 다시 입력해야 했습니다. 시트 전환 자체는 셀 수가 많아지면 입력이 막히던 과거 경험에서 한계를 예상한 판단이었습니다(이번 시트에서 겪은 한계는 아닙니다).</li>
-          <li><strong>원인</strong> 클라이언트 1 : 프로젝트 N 관계를 폼 한 곳에서 같이 다뤄, 클라이언트 상세 정보가 프로젝트에 섞여 있었습니다.</li>
-          <li><strong>해결</strong> 2025-02-18에 클라이언트 관리 화면과 별도 테이블을 만들어 상세 정보를 클라이언트 테이블에만 두고, 프로젝트 폼에서 클라이언트명을 입력하면 서버(Ajax)에서 일치 목록을 받아 선택 시 나머지 정보가 읽기 전용으로 채워지게 했습니다. 프로젝트 테이블에는 연결 기준으로 클라이언트명과 사업자번호만 저장합니다.</li>
-          <li><strong>결과</strong> 개발 종료 시점 기준 프로젝트 17건(완료 7건)을 프로젝트 관리 페이지에서, 클라이언트 42곳(유지보수 32곳)을 클라이언트 관리 페이지에서 각각 검색·관리합니다. 한계: 대표에게 사용을 제안했지만 피드백을 받지 못했고 실제 사용자는 저 혼자였으며, 파일 첨부(계약서 업로드)는 만들지 못했습니다. 부트캠프에서 RDBMS를 배운 뒤 코드를 다시 읽고, 연결 기준이 ID가 아니라 이름·사업자번호라 클라이언트 이름을 고치면 프로젝트에 저장된 이름과 어긋난다는 점을 확인했습니다(개발 당시에 발견한 것은 아닙니다). 시간 단축 같은 수치는 측정하지 않았습니다.</li>
-        </ul>
-        <h5>Tech Stack<span class="period-mark">.</span></h5>
-        <p>PHP, MySQL, 그누보드5(adm 확장), Ajax</p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<section>
-  <h2>Education<span class="period-mark">.</span></h2>
-  <div class="row">
-    <div class="row-left">
-      <h3>코드잇 부트캠프<span class="period-mark">.</span></h3>
-      <span class="role">클라우드 기반 풀스택 엔지니어</span>
-      <span>2026. 02 - 2026. 08</span>
-    </div>
-    <div class="row-right">
-      <p>Part 1 미니 프로젝트부터 Part 4 팀 프로젝트까지 수행했습니다. (Part 2 공부의 숲, Part 3 최애의 포토, Part 4 무빙)</p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="row-left">
-      <h3>수원과학대학교<span class="period-mark">.</span></h3>
-      <span class="role">정보통신학과</span>
-      <span>2008. 03 - 2013. 02</span>
-    </div>
-    <div class="row-right">
-      <p>전문학사</p>
-    </div>
-  </div>
-</section>
-
-<section id="skills">
-  <h2>Skills<span class="period-mark">.</span></h2>
-  <div class="skill-group">
-    <h5>Language<span class="period-mark">.</span></h5>
-    <p>TypeScript, Node.js</p>
-  </div>
-  <div class="skill-group">
-    <h5>Frontend<span class="period-mark">.</span></h5>
-    <p>React, Next.js, TanStack Query</p>
-  </div>
-  <div class="skill-group">
-    <h5>Backend<span class="period-mark">.</span></h5>
-    <p>Express, Prisma, PostgreSQL</p>
-  </div>
-  <div class="skill-group">
-    <h5>Infra · 기타<span class="period-mark">.</span></h5>
-    <p>SSE·Web Streams, node-cron, zod, GitHub Actions, PM2</p>
-  </div>
-</section>
-
-<section id="contact">
-  <h2>Contact<span class="period-mark">.</span></h2>
-  <ul class="contact-list">
-    <li><a href="mailto:codribble@gmail.com">이메일</a></li>
-    <li><a href="https://github.com/codribble" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-  </ul>
-</section>
-
-</div>
-</body>
+  </body>
 </html>
