@@ -35,6 +35,218 @@
         </p>
       </section>
 
+      <section id="skills">
+        <h2>Skills<span class="period-mark">.</span></h2>
+        <div class="skill-group">
+          <h5>Language<span class="period-mark">.</span></h5>
+          <p>TypeScript, JavaScript</p>
+        </div>
+        <div class="skill-group">
+          <h5>Frontend<span class="period-mark">.</span></h5>
+          <p>React, Next.js, TanStack Query, Tailwind CSS</p>
+        </div>
+        <div class="skill-group">
+          <h5>Backend<span class="period-mark">.</span></h5>
+          <p>Node.js, Express, Prisma, PostgreSQL, PHP, MySQL, 그누보드5·영카트5</p>
+        </div>
+        <div class="skill-group">
+          <h5>Infra · Tools<span class="period-mark">.</span></h5>
+          <p>
+            Amazon EC2/RDS/S3, PM2, node-cron, Git, GitHub Actions, Zod, Claude
+            Code, Cursor
+          </p>
+        </div>
+      </section>
+
+      <section id="career">
+        <h2>Work Experience<span class="period-mark">.</span></h2>
+
+        <div class="row">
+          <div class="row-left">
+            <h3>꼴크리에이티브<span class="period-mark">.</span></h3>
+            <span class="role">과장</span>
+            <span>2017. 02 - 2026. 01</span>
+          </div>
+          <div class="row-right">
+            <div class="project">
+              <h4>
+                비대면 진료 이커머스 플랫폼<span class="period-mark">.</span>
+              </h4>
+              <span class="time"
+                >기획 단계부터 참여 · 채널톡 연동·3PL 양식 개발 · 외주
+                검수</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료
+                이커머스 플랫폼에 기획 단계부터 참여했습니다. 3사 요구사항을
+                취합·문서화하고 유저 플로우를 설계했으며, 개발 범위의 우선순위를
+                정했고, 외주 개발분은 완료 때마다 검수해 재요청했습니다.
+              </p>
+              <h5>
+                로그아웃 후 식별 정보 잔존<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 로그아웃한 비회원 문의창에 이전 회원의
+                  이름·연락처가 남는 것을 직접 문의 테스트 중 발견했습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 쇼핑몰 로그아웃과 채널톡 사용자 식별이
+                  따로 동작했고, 기존 로그아웃은 PHP 리다이렉트로 바로 이동해
+                  채널톡 종료 스크립트가 실행되지 않았습니다. 원인은 가설입니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 로그아웃 페이지에서 채널톡을 먼저 종료한
+                  뒤 이동하도록 바꿨습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 비회원 화면으로 열어 이전 회원의 식별
+                  정보가 비워지는 것을 직접 확인했습니다.
+                </li>
+              </ul>
+              <h5>
+                결제일시가 채널톡에 반영되지 않던 문제<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 무통장 입금확인 후 결제일시가 채널톡
+                  상담 화면에 반영되지 않았습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 서버 출력을 보고 조건을 하나씩 바꿔 가며
+                  테스트해 채널톡 수정 호출(PATCH)이 422로 실패하는 것을
+                  확인했습니다. PATCH가 실패한 이유 자체는 확인하지 못했습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> PUT으로 바꿨고, PUT으로 반영되는 것을 직접
+                  확인했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 결제일시가 채널톡에 반영됩니다.
+                </li>
+              </ul>
+              <h5>
+                3PL 회신 엑셀 일괄 송장 등록<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 배송 송장 등록이 반복 수작업이었습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> CMS 일괄배송 엑셀 양식이 물류
+                  대행(3PL)의 접수·회신 포맷과 맞지 않았습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 3PL 접수·회신 양식을 그대로 받도록
+                  업로드 화면을 커스터마이징했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 3PL 회신 엑셀을 가공 없이 업로드해 일괄
+                  처리하는 양식이 운영에 적용됐습니다. 처리 시간 같은 수치는
+                  측정하지 않았습니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>PHP, cURL, 채널톡 Open API, 그누보드5·영카트5</p>
+            </div>
+
+            <div class="project">
+              <h4>재정보고 템플릿화<span class="period-mark">.</span></h4>
+              <span class="time">유지보수 개선</span>
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                연 1회 갱신하는 재정보고 페이지를 연도마다 표 코드를 늘려 가며
+                유지하던 구조에서, 데이터 배열과 공통 템플릿으로 바꿨습니다.
+              </p>
+              <h5>
+                연도별 하드코딩 표를 공통 템플릿으로<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 연도마다 표 코드를 수작업으로 늘려야
+                  했고(하드코딩 연도 페이지 124~129줄), 클라이언트가 준 수치의
+                  합계·퍼센트가 맞지 않는 경우가 있었습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 표 마크업과 수치가 한 코드에 하드코딩돼
+                  연도마다 복제·수정해야 했습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 연 1회 갱신이라 관리자 화면과 DB 대신
+                  연도 데이터 배열과 공통 템플릿으로 분리해, 합계·퍼센트를
+                  계산값으로 표기하게 했습니다. 전달 수치가 맞지 않으면 2023년도분은 클라이언트에게
+                  어떤 데이터로 반영할지 문의하고 기다렸고, 2024년도분은 계산
+                  근거를 제시하며 계산값 반영을 제안해 사전에 확인받는 절차로
+                  바꿨습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 연도 페이지가 124~129줄에서 30줄로
+                  줄었고, 새 연도는 디렉터리와 데이터 배열만 추가하면 되도록
+                  안내 주석을 남겼습니다. 템플릿으로 작업한 것은
+                  2023·2024년도분 두 번입니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>PHP, 그누보드5</p>
+            </div>
+
+            <div class="project">
+              <h4>프로젝트 관리 시스템<span class="period-mark">.</span></h4>
+              <span class="time"
+                >사내 업무 도구 · 요구사항 정리·구현·검수 단독</span
+              >
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                구글 스프레드시트로 관리하던 그래픽·웹·마케팅팀의 프로젝트와
+                클라이언트 정보를 자사 웹사이트(그누보드5) 관리자 화면의 CRUD로
+                옮겼습니다. 지시 없이 시작했고 요구사항 정리, 구현, CRUD
+                검수를 단독으로 진행했습니다.
+              </p>
+              <h5>
+                클라이언트 정보 중복 입력 제거<span class="period-mark">.</span>
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 개발 초기 프로젝트 폼에는 클라이언트를
+                  텍스트로 입력하는 칸뿐이라, 한 클라이언트가 여러 프로젝트를
+                  의뢰하면 대표·연락처·주소·담당자를 프로젝트마다 다시 입력해야
+                  했습니다. 시트 전환 자체는 셀 수가 많아지면 입력이 막히던 과거
+                  경험에서 한계를 예상한 판단이었습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 클라이언트 1 : 프로젝트 N 관계를 폼 한
+                  곳에서 같이 다뤄, 클라이언트 상세 정보가 프로젝트에 섞여
+                  있었습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 2025-02-18에 클라이언트 관리 화면과 별도
+                  테이블을 만들어 상세 정보를 클라이언트 테이블에만 두고,
+                  프로젝트 폼에서 클라이언트명을 입력하면 서버(Ajax)에서 일치
+                  목록을 받아 선택 시 나머지 정보가 읽기 전용으로 채워지게
+                  했습니다. 프로젝트 테이블에는 연결 기준으로 클라이언트명과
+                  사업자번호만 저장합니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 개발 종료 시점 기준 프로젝트 17건(완료
+                  7건)을 프로젝트 관리 페이지에서, 클라이언트 42곳(유지보수
+                  32곳)을 클라이언트 관리 페이지에서 각각 검색·조회합니다. 한계:
+                  연결 기준이 ID가 아니라 이름·사업자번호라 클라이언트 이름을
+                  고치면 프로젝트에 저장된 이름과 어긋납니다. ID 기반 연결로
+                  바꾸는 것이 다음 개선점입니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>PHP, MySQL, 그누보드5(adm 확장), Ajax</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="projects">
         <h2>Projects<span class="period-mark">.</span></h2>
 
@@ -427,195 +639,6 @@
         </div>
       </section>
 
-      <section id="career">
-        <h2>Work Experience<span class="period-mark">.</span></h2>
-
-        <div class="row">
-          <div class="row-left">
-            <h3>꼴크리에이티브<span class="period-mark">.</span></h3>
-            <span class="role">과장</span>
-            <span>2017. 02 - 2026. 01</span>
-          </div>
-          <div class="row-right">
-            <div class="project">
-              <h4>
-                비대면 진료 이커머스 플랫폼<span class="period-mark">.</span>
-              </h4>
-              <span class="time"
-                >기획 단계부터 참여 · 채널톡 연동·3PL 양식 개발 · 외주
-                검수</span
-              >
-              <h5>Description<span class="period-mark">.</span></h5>
-              <p>
-                한의원·대행사·자사 3사와 외주 개발사가 참여한 비대면 진료
-                이커머스 플랫폼에 기획 단계부터 참여했습니다. 3사 요구사항을
-                취합·문서화하고 유저 플로우를 설계했으며, 개발 범위의 우선순위를
-                정했고, 외주 개발분은 완료 때마다 검수해 재요청했습니다.
-              </p>
-              <h5>
-                로그아웃 후 식별 정보 잔존<span class="period-mark">.</span>
-              </h5>
-              <ul>
-                <li>
-                  <strong>문제</strong> 로그아웃한 비회원 문의창에 이전 회원의
-                  이름·연락처가 남는 것을 직접 문의 테스트 중 발견했습니다.
-                </li>
-                <li>
-                  <strong>원인</strong> 쇼핑몰 로그아웃과 채널톡 사용자 식별이
-                  따로 동작했고, 기존 로그아웃은 PHP 리다이렉트로 바로 이동해
-                  채널톡 종료 스크립트가 실행되지 않았습니다. 원인은 가설입니다.
-                </li>
-                <li>
-                  <strong>해결</strong> 로그아웃 페이지에서 채널톡을 먼저 종료한
-                  뒤 이동하도록 바꿨습니다.
-                </li>
-                <li>
-                  <strong>결과</strong> 비회원 화면으로 열어 이전 회원의 식별
-                  정보가 비워지는 것을 직접 확인했습니다.
-                </li>
-              </ul>
-              <h5>
-                결제일시가 채널톡에 반영되지 않던 문제<span class="period-mark"
-                  >.</span
-                >
-              </h5>
-              <ul>
-                <li>
-                  <strong>문제</strong> 무통장 입금확인 후 결제일시가 채널톡
-                  상담 화면에 반영되지 않았습니다.
-                </li>
-                <li>
-                  <strong>원인</strong> 서버 출력을 보고 조건을 하나씩 바꿔 가며
-                  테스트해 채널톡 수정 호출(PATCH)이 422로 실패하는 것을
-                  확인했습니다. PATCH가 실패한 이유 자체는 확인하지 못했습니다.
-                </li>
-                <li>
-                  <strong>해결</strong> PUT으로 바꿨고, PUT으로 반영되는 것을 직접
-                  확인했습니다.
-                </li>
-                <li>
-                  <strong>결과</strong> 결제일시가 채널톡에 반영됩니다.
-                </li>
-              </ul>
-              <h5>
-                3PL 회신 엑셀 일괄 송장 등록<span class="period-mark">.</span>
-              </h5>
-              <ul>
-                <li>
-                  <strong>문제</strong> 배송 송장 등록이 반복 수작업이었습니다.
-                </li>
-                <li>
-                  <strong>원인</strong> CMS 일괄배송 엑셀 양식이 물류
-                  대행(3PL)의 접수·회신 포맷과 맞지 않았습니다.
-                </li>
-                <li>
-                  <strong>해결</strong> 3PL 접수·회신 양식을 그대로 받도록
-                  업로드 화면을 커스터마이징했습니다.
-                </li>
-                <li>
-                  <strong>결과</strong> 3PL 회신 엑셀을 가공 없이 업로드해 일괄
-                  처리하는 양식이 운영에 적용됐습니다. 처리 시간 같은 수치는
-                  측정하지 않았습니다.
-                </li>
-              </ul>
-              <h5>Tech Stack<span class="period-mark">.</span></h5>
-              <p>PHP, cURL, 채널톡 Open API, 그누보드5·영카트5</p>
-            </div>
-
-            <div class="project">
-              <h4>재정보고 템플릿화<span class="period-mark">.</span></h4>
-              <span class="time">유지보수 개선</span>
-              <h5>Description<span class="period-mark">.</span></h5>
-              <p>
-                연 1회 갱신하는 재정보고 페이지를 연도마다 표 코드를 늘려 가며
-                유지하던 구조에서, 데이터 배열과 공통 템플릿으로 바꿨습니다.
-              </p>
-              <h5>
-                연도별 하드코딩 표를 공통 템플릿으로<span class="period-mark"
-                  >.</span
-                >
-              </h5>
-              <ul>
-                <li>
-                  <strong>문제</strong> 연도마다 표 코드를 수작업으로 늘려야
-                  했고(하드코딩 연도 페이지 124~129줄), 클라이언트가 준 수치의
-                  합계·퍼센트가 맞지 않는 경우가 있었습니다.
-                </li>
-                <li>
-                  <strong>원인</strong> 표 마크업과 수치가 한 코드에 하드코딩돼
-                  연도마다 복제·수정해야 했습니다.
-                </li>
-                <li>
-                  <strong>해결</strong> 연 1회 갱신이라 관리자 화면과 DB 대신
-                  연도 데이터 배열과 공통 템플릿으로 분리해, 합계·퍼센트를
-                  계산값으로 표기하게 했습니다. 전달 수치가 맞지 않으면 2023년도분은 클라이언트에게
-                  어떤 데이터로 반영할지 문의하고 기다렸고, 2024년도분은 계산
-                  근거를 제시하며 계산값 반영을 제안해 사전에 확인받는 절차로
-                  바꿨습니다.
-                </li>
-                <li>
-                  <strong>결과</strong> 연도 페이지가 124~129줄에서 30줄로
-                  줄었고, 새 연도는 디렉터리와 데이터 배열만 추가하면 되도록
-                  안내 주석을 남겼습니다. 템플릿으로 작업한 것은
-                  2023·2024년도분 두 번입니다.
-                </li>
-              </ul>
-              <h5>Tech Stack<span class="period-mark">.</span></h5>
-              <p>PHP, 그누보드5</p>
-            </div>
-
-            <div class="project">
-              <h4>프로젝트 관리 시스템<span class="period-mark">.</span></h4>
-              <span class="time"
-                >사내 업무 도구 · 요구사항 정리·구현·검수 단독</span
-              >
-              <h5>Description<span class="period-mark">.</span></h5>
-              <p>
-                구글 스프레드시트로 관리하던 그래픽·웹·마케팅팀의 프로젝트와
-                클라이언트 정보를 자사 웹사이트(그누보드5) 관리자 화면의 CRUD로
-                옮겼습니다. 지시 없이 시작했고 요구사항 정리, 구현, CRUD
-                검수를 단독으로 진행했습니다.
-              </p>
-              <h5>
-                클라이언트 정보 중복 입력 제거<span class="period-mark">.</span>
-              </h5>
-              <ul>
-                <li>
-                  <strong>문제</strong> 개발 초기 프로젝트 폼에는 클라이언트를
-                  텍스트로 입력하는 칸뿐이라, 한 클라이언트가 여러 프로젝트를
-                  의뢰하면 대표·연락처·주소·담당자를 프로젝트마다 다시 입력해야
-                  했습니다. 시트 전환 자체는 셀 수가 많아지면 입력이 막히던 과거
-                  경험에서 한계를 예상한 판단이었습니다.
-                </li>
-                <li>
-                  <strong>원인</strong> 클라이언트 1 : 프로젝트 N 관계를 폼 한
-                  곳에서 같이 다뤄, 클라이언트 상세 정보가 프로젝트에 섞여
-                  있었습니다.
-                </li>
-                <li>
-                  <strong>해결</strong> 2025-02-18에 클라이언트 관리 화면과 별도
-                  테이블을 만들어 상세 정보를 클라이언트 테이블에만 두고,
-                  프로젝트 폼에서 클라이언트명을 입력하면 서버(Ajax)에서 일치
-                  목록을 받아 선택 시 나머지 정보가 읽기 전용으로 채워지게
-                  했습니다. 프로젝트 테이블에는 연결 기준으로 클라이언트명과
-                  사업자번호만 저장합니다.
-                </li>
-                <li>
-                  <strong>결과</strong> 개발 종료 시점 기준 프로젝트 17건(완료
-                  7건)을 프로젝트 관리 페이지에서, 클라이언트 42곳(유지보수
-                  32곳)을 클라이언트 관리 페이지에서 각각 검색·조회합니다. 한계:
-                  연결 기준이 ID가 아니라 이름·사업자번호라 클라이언트 이름을
-                  고치면 프로젝트에 저장된 이름과 어긋납니다. ID 기반 연결로
-                  바꾸는 것이 다음 개선점입니다.
-                </li>
-              </ul>
-              <h5>Tech Stack<span class="period-mark">.</span></h5>
-              <p>PHP, MySQL, 그누보드5(adm 확장), Ajax</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section>
         <h2>Education<span class="period-mark">.</span></h2>
         <div class="row">
@@ -640,29 +663,6 @@
           <div class="row-right">
             <p>전문학사</p>
           </div>
-        </div>
-      </section>
-
-      <section id="skills">
-        <h2>Skills<span class="period-mark">.</span></h2>
-        <div class="skill-group">
-          <h5>Language<span class="period-mark">.</span></h5>
-          <p>TypeScript, JavaScript</p>
-        </div>
-        <div class="skill-group">
-          <h5>Frontend<span class="period-mark">.</span></h5>
-          <p>React, Next.js, TanStack Query, Tailwind CSS</p>
-        </div>
-        <div class="skill-group">
-          <h5>Backend<span class="period-mark">.</span></h5>
-          <p>Node.js, Express, Prisma, PostgreSQL, PHP, MySQL, 그누보드5·영카트5</p>
-        </div>
-        <div class="skill-group">
-          <h5>Infra · Tools<span class="period-mark">.</span></h5>
-          <p>
-            Amazon EC2/RDS/S3, PM2, node-cron, Git, GitHub Actions, Zod, Claude
-            Code, Cursor
-          </p>
         </div>
       </section>
 
