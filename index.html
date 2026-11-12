@@ -47,13 +47,12 @@
         </div>
         <div class="skill-group">
           <h5>Backend<span class="period-mark">.</span></h5>
-          <p>Node.js, Express, Prisma, PostgreSQL, PHP, MySQL, 그누보드5·영카트5</p>
+          <p>Node.js, Express, Prisma, PostgreSQL, PHP, MySQL</p>
         </div>
         <div class="skill-group">
           <h5>Infra · Tools<span class="period-mark">.</span></h5>
           <p>
-            Amazon EC2/RDS/S3, PM2, node-cron, Git, GitHub Actions, Zod, Claude
-            Code, Cursor
+            Amazon EC2/RDS/S3, PM2, Git, GitHub Actions, Claude Code, Cursor
           </p>
         </div>
       </section>
@@ -242,6 +241,80 @@
               </ul>
               <h5>Tech Stack<span class="period-mark">.</span></h5>
               <p>PHP, MySQL, 그누보드5(adm 확장), Ajax</p>
+            </div>
+
+            <div class="project">
+              <h4>
+                결제 없는 상품 카탈로그 구축·브랜드 관리<span
+                  class="period-mark"
+                  >.</span
+                >
+              </h4>
+              <span class="time">사이트 리뉴얼 · 구축 방식 제안 · 브랜드 관리 개발</span>
+              <h5>Description<span class="period-mark">.</span></h5>
+              <p>
+                사명을 변경한 건축자재 납품 업체의 사이트 리뉴얼에서 상품을
+                분류·등록해 관리하되 온라인 결제는 필요하지 않았습니다. 구축 방식
+                비교와 브랜드 관리 분리는 제가 판단했습니다.
+              </p>
+              <h5>
+                게시판 대신 영카트 기반으로 구축<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 상품을 그누보드 게시판으로 관리할지,
+                  쇼핑몰로 만들고 결제를 제한할지 정해야 했습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 게시판 방식은 스킨에 상품 관리 기능을
+                  더해야 하고, 영카트 방식은 기존 상품 관리를 수정해야 해 각각
+                  개발 범위가 달랐습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 분류·상품 관리가 이미 갖춰진 영카트를
+                  활용하는 편이 추가 개발 범위가 작다고 판단해 제안했고, 승인받아
+                  진행했습니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 영카트의 분류·상품 관리로 결제 없는
+                  상품 카탈로그를 관리합니다. 개발비·작업시간 절감 효과는
+                  측정하지 않았습니다.
+                </li>
+              </ul>
+              <h5>
+                브랜드 반복 입력 제거와 연관검색<span class="period-mark"
+                  >.</span
+                >
+              </h5>
+              <ul>
+                <li>
+                  <strong>문제</strong> 상품마다 정해진 브랜드명을 매번 수기로
+                  입력해야 했습니다.
+                </li>
+                <li>
+                  <strong>원인</strong> 영카트 상품 입력 화면에는 브랜드를
+                  따로 등록해 선택하는 기능이 없었습니다.
+                </li>
+                <li>
+                  <strong>해결</strong> 브랜드와 로고를 관리하는 페이지를
+                  분리하고, 상품 등록·수정 화면에서 검색어를 입력하면 SQL
+                  <code>LIKE</code>로 등록된 브랜드를 조회해 선택하도록
+                  연결했습니다. 로고가 없는 브랜드는 안내 문구와 ‘로고 등록’
+                  버튼을 보여줍니다.
+                </li>
+                <li>
+                  <strong>결과</strong> 상품 입력 때 브랜드를 검색·선택하고,
+                  로고 누락은 입력 화면에서 확인해 등록으로 이어갈 수 있습니다.
+                  한계: 상품에는 브랜드의 고유 키가 아니라 브랜드명 문자열을
+                  <code>it_brand</code>에 저장해, 관리 페이지에서 브랜드를 고치거나
+                  지워도 상품 값은 따라가지 않습니다. 브랜드 ID로 연결하는 것이
+                  다음 개선점입니다.
+                </li>
+              </ul>
+              <h5>Tech Stack<span class="period-mark">.</span></h5>
+              <p>PHP, MySQL, JavaScript, Ajax, 그누보드5·영카트5</p>
             </div>
           </div>
         </div>
